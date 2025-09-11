@@ -1,0 +1,33 @@
+{
+  "name": "xsshunter-express",
+  "version": "1.0.0",
+  "description": "Simplified and easy-to-setup version of XSS Hunter for self-hosting.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "mandatory (Matthew Bryant)",
+  "license": "MIT",
+  "dependencies": {
+    "@nvanexan/node-client-sessions": "^0.8.0",
+    "bcrypt": "^6.0.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-jsonschema": "^1.1.6",
+    "greenlock-express": "^4.0.3",
+    "keygrip": "^1.1.0",
+    "memorystore": "^1.6.7",
+    "moment": "^2.30.1",
+    "multer": "^2.0.2",
+    "mustache": "^4.2.0",
+    "nodemailer": "^7.0.6",
+    "pg": "^8.16.3",
+    "safe-compare": "^1.1.4",
+    "sequelize": "^6.37.7",
+    "serve-favicon": "^2.5.1",
+    "terser": "^5.44.0",
+    "uuid": "^12.0.0"
+  }
+}

@@ -1,0 +1,33 @@
+// Import theme overrides FIRST (as specified in the original project)
+// This allows customization without modifying core files
+@import '../sass/theme-overrides.scss';
+
+// Then import the Black Dashboard theme
+@import '../sass/black-dashboard.scss';
+
+// Additional Vue 3 specific styles
+.wrapper {
+  position: relative;
+  top: 0;
+  height: 100vh;
+  display: flex;
+}
+
+.main-panel {
+  position: relative;
+  flex: 1;
+  overflow: auto;
+  background: $background-black;
+}
+
+.content {
+  padding: 20px 15px;
+  min-height: calc(100vh - 123px);
+}
+
+.container-fluid {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}

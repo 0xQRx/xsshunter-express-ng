@@ -1,0 +1,761 @@
+/**
+ * XSS Hunter Express Theme Overrides
+ * 
+ * This file provides a centralized way to customize the Black Dashboard theme
+ * without breaking existing functionality. Simply uncomment and modify the 
+ * variables you want to change.
+ * 
+ * Usage:
+ * 1. Import this file BEFORE the black-dashboard.scss in main.js
+ * 2. Uncomment the variables you want to override
+ * 3. Rebuild the frontend (npm run build)
+ */
+
+// ============================================================================
+// CORE THEME COLORS
+// ============================================================================
+// These are the main colors used throughout the application.
+// Changing these will affect buttons, badges, alerts, and other components.
+
+// Main brand colors
+// $primary:       #2c7be5;  // Professional blue instead of pink
+// $secondary:     #f4f5f7;  // Light gray (keeping same)
+// $success:       #00d97e;  // Green instead of teal
+// $info:          #39afd1;  // Cyan blue
+// $warning:       #f6c343;  // Golden yellow instead of coral
+// $danger:        #e63757;  // True red instead of pink
+
+// ============================================================================
+// THEME: 🌊 ASH GREY & DEEP SEA BLUE (Refined)
+// Calm modern look with subtle orange/purple accents
+// ============================================================================
+$primary:       #e67e50;  // Warmer terracotta orange - main actions
+$secondary:     #2c3e50;  // Refined slate blue - secondary elements  
+$success:       #26a69a;  // Softer teal - success states
+$info:          #5dade2;  // Softer sky blue - information
+$warning:       #f4a261;  // Warm amber - warnings
+$danger:        #dc3545;  // Proper red for danger - stands out
+
+// Button states - flat modern look (same colors for no gradient effect)
+$primary-states:       #e67e50;  // Same as primary - no gradient
+$success-states:       #26a69a;  // Same as success - no gradient
+$info-states:          #5dade2;  // Same as info - no gradient
+$warning-states:       #f4a261;  // Same as warning - no gradient
+$danger-states:        #dc3545;  // Same as danger - no gradient
+
+// Keep gradients enabled for sidebar, but we'll override buttons
+$enable-gradients:     true;
+
+// Background colors - warmer tones for comfort
+$background-black:           #0d1117;  // Slightly warmer black
+$background-states-black:    #131820;  // Subtle warm tint
+$card-black-background:      #161b22;  // Warm card background
+
+// Adjusted text for better readability and warmth
+$opacity-8:                  rgba(235, 237, 240, .92);  // Slightly warm white
+$opacity-6:                  rgba(173, 186, 199, .85);  // Warmer grey
+$opacity-5:                  rgba(139, 152, 166, .7);   // Softer fade
+
+// Subtle gradient for sidebar - much closer values
+$sidebar-background:         #1a222b;  // Darker blue-grey (top)
+$sidebar-gradient-end:       #1e2730;  // Very close value (bottom)
+$navbar-background:          #171d26;  // Matching card background
+
+// Remove gradients from buttons only (keep sidebar gradient)
+.btn:not(.btn-link):not(.btn-outline-primary):not(.btn-outline-danger):not(.btn-outline-info):not(.btn-outline-warning):not(.btn-outline-success) {
+  background-image: none !important;
+  &:hover, &:focus, &:active {
+    background-image: none !important;
+  }
+}
+
+// Fix outline buttons to stay outlined
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-info,
+.btn-outline-warning,
+.btn-outline-danger {
+  background: transparent !important;
+  background-color: transparent !important;
+  &:hover {
+    background-image: none !important;
+  }
+}
+
+// Add gradient to sidebar
+.sidebar {
+  background: linear-gradient(180deg, $sidebar-background 0%, $sidebar-gradient-end 100%) !important;
+  
+  .sidebar-wrapper {
+    background: transparent !important;
+  }
+}
+
+// ============================================================================
+// PAGINATION OVERRIDES
+// ============================================================================
+// Override hardcoded pagination colors to use theme variables
+
+.pagination .page-item .page-link {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 0;
+  border-radius: 30px !important;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+  margin: 0 3px;
+  min-width: 30px;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  text-transform: uppercase;
+  outline: none;
+  
+  &:focus, &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.pagination .page-item.active > .page-link {
+  color: #fff;
+  box-shadow: 0 1px 20px 0 rgba(0, 0, 0, .1);
+  
+  &, &:focus, &:hover {
+    background: $primary !important;
+    background-image: none !important;  // Remove gradient for flat look
+    color: #fff;
+  }
+}
+
+.pagination .page-item.disabled > .page-link {
+  opacity: .5;
+}
+
+// Variant pagination styles
+.pagination.pagination-info .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background: $info !important;
+    background-image: none !important;
+  }
+}
+
+.pagination.pagination-success .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background: $success !important;
+    background-image: none !important;
+  }
+}
+
+.pagination.pagination-primary .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background: $primary !important;
+    background-image: none !important;
+  }
+}
+
+.pagination.pagination-warning .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background: $warning !important;
+    background-image: none !important;
+  }
+}
+
+.pagination.pagination-danger .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background: $danger !important;
+    background-image: none !important;
+  }
+}
+
+.pagination.pagination-neutral .page-item > .page-link {
+  color: #fff;
+  
+  &:focus, &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+.pagination.pagination-neutral .page-item.active > .page-link {
+  &, &:focus, &:hover {
+    background-color: #fff;
+    border-color: #fff;
+    color: $primary;
+  }
+}
+
+.pagination .arrow-margin-left,
+.pagination .arrow-margin-right {
+  position: absolute;
+}
+
+.pagination .arrow-margin-right {
+  right: 0;
+}
+
+.pagination .arrow-margin-left {
+  left: 0;
+}
+
+// ============================================================================
+// MODAL OVERRIDES
+// ============================================================================
+// Override hardcoded modal colors to use theme variables
+
+.modal-black .modal-content,
+.modal .modal-content,
+.modal-content {
+  background: $card-black-background !important;
+  background-color: $card-black-background !important;
+  color: $opacity-8 !important;
+}
+
+.modal-black .modal-body,
+.modal .modal-body,
+.modal-body {
+  background: $card-black-background !important;
+  background-color: $card-black-background !important;
+  color: $opacity-8 !important;
+}
+
+.modal-black .modal-header,
+.modal .modal-header,
+.modal-header {
+  background: $card-black-background !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-black .modal-footer,
+.modal .modal-footer,
+.modal-footer {
+  background: $card-black-background !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-black .modal-title,
+.modal .modal-title,
+.modal-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+}
+
+.modal-black .form-control,
+.modal .form-control {
+  background-color: $background-states-black !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: $opacity-8 !important;
+  
+  &:focus {
+    background-color: $card-black-background !important;
+    border-color: $primary !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+.modal-black label,
+.modal label {
+  color: $opacity-6 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  
+  // Style checkbox text to match other modal labels
+  &.form-check-label span:last-child {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+// Make modal close button (X) visible in dark theme
+.modal-black .modal-header .close,
+.modal .modal-header .close {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 1.5rem;
+  opacity: 0.8;
+  
+  &:hover,
+  &:focus {
+    color: rgba(255, 255, 255, 1) !important;
+    opacity: 1;
+  }
+}
+
+// Style readonly input fields to match custom theme
+input[readonly],
+.form-control[readonly] {
+  background-color: $background-states-black !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: $opacity-8 !important;
+  cursor: default;
+  
+  &:focus {
+    background-color: $card-black-background !important;
+    border-color: $primary !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+// Style select elements to match custom theme (for Pages to Collect dropdown)
+select.form-control,
+select.pages-select {
+  background-color: $background-states-black !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: $opacity-8 !important;
+  height: 120px !important; // Smaller initial height
+  
+  &:focus {
+    background-color: $card-black-background !important;
+    border-color: $primary !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  
+  option {
+    background-color: $background-states-black !important;
+    color: $opacity-8 !important;
+    
+    &:checked {
+      background-color: $primary !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+.modal-black .form-text,
+.modal .form-text {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 0.75rem;
+}
+
+// Fix white background issue in modal backdrop
+.modal-backdrop {
+  background-color: #000 !important;
+}
+
+// Ensure all modal variations use dark theme
+.modal.show .modal-dialog .modal-content {
+  background: $card-black-background !important;
+  color: $opacity-8 !important;
+}
+
+// Login page styling to match custom theme
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #161920; // Match theme background
+  
+  .card.bg-secondary {
+    background-color: $card-black-background !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .form-control {
+    background-color: $background-states-black !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: $opacity-8 !important;
+    
+    &:focus {
+      background-color: $card-black-background !important;
+      border-color: $primary !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+    }
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+  
+  .input-group-text {
+    background-color: $background-states-black !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: $opacity-8 !important;
+    
+    i {
+      color: $opacity-8 !important;
+    }
+  }
+  
+  .input-group-focus .input-group-text {
+    background-color: $card-black-background !important;
+    border-color: $primary !important;
+    
+    i {
+      color: #ffffff !important;
+    }
+  }
+}
+
+// ============================================================================
+// CODE TAG STYLING
+// ============================================================================
+// Override the pink color for code tags to use our theme colors
+
+code {
+  color: $info !important;  // Use our sky blue for good readability
+}
+
+// ============================================================================
+// CODEMIRROR EDITOR STYLING
+// ============================================================================
+// Centralized styles for all CodeMirror instances across the application
+// Used in: PayloadConsole, XSSPayloadFireReports
+
+.CodeMirror {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #161b22 !important;
+  color: #f8f8f2 !important;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 13px;
+}
+
+// Fixed height for modal editors (PayloadConsole)
+.payload-code-editor .CodeMirror {
+  height: 400px !important;
+}
+
+.payload-code-editor .CodeMirror-scroll {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+// Dynamic height for display-only editors (XSSPayloadFireReports)
+.xss-report-codemirror .CodeMirror {
+  height: 400px !important;
+  max-height: 400px !important;
+}
+
+.xss-report-codemirror .CodeMirror-scroll {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+}
+
+.CodeMirror-gutters {
+  background: #0d1117 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.CodeMirror-linenumber {
+  color: rgba(255, 255, 255, 0.3) !important;
+  padding: 0 3px 0 5px;
+}
+
+.CodeMirror-cursor {
+  border-left: 1px solid #f8f8f2 !important;
+}
+
+.CodeMirror-selected {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+// Ensure scrollbars match theme
+.CodeMirror-vscrollbar,
+.CodeMirror-hscrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+// ============================================================================
+// LOADING BAR STYLING
+// ============================================================================
+// Centralized loading bar color using theme primary color
+
+.bg-primary-theme {
+  background-color: $primary !important;
+}
+
+// Reduce modal shadow for cleaner look
+.modal-dialog {
+  .modal-content {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;  // Reduced from default shadow
+  }
+}
+
+// Make modal appear more integrated with dark theme
+.modal.show {
+  .modal-dialog {
+    .modal-content {
+      border: 1px solid rgba(255, 255, 255, 0.05);  // Subtle border
+    }
+  }
+}
+
+// Alternative color scheme examples:
+
+// Professional Blue Theme
+// $primary:       #2c7be5;
+// $success:       #00d97e;
+// $info:          #39afd1;
+// $warning:       #f6c343;
+// $danger:        #e63757;
+
+// Dark Purple Theme
+// $primary:       #6f42c1;
+// $success:       #28a745;
+// $info:          #17a2b8;
+// $warning:       #ffc107;
+// $danger:        #dc3545;
+
+// Cybersecurity Red Theme
+// $primary:       #dc3545;
+// $success:       #28a745;
+// $info:          #007bff;
+// $warning:       #ff9800;
+// $danger:        #f44336;
+
+// ============================================================================
+// BACKGROUND COLORS
+// ============================================================================
+// These control the main background colors of the dashboard
+
+// (Already set in theme above - commenting out to avoid conflict)
+// $background-black:           #0f1419;  // Darker, more professional background
+// $background-states-black:    #1e1e24;  // Slightly different shade for states
+
+// Alternative backgrounds:
+// $background-black:           #0d1117;  // GitHub dark theme style
+// $background-black:           #1a1a2e;  // Deeper purple-black
+// $background-black:           #161b22;  // Softer dark
+
+// ============================================================================
+// CARD & COMPONENT COLORS
+// ============================================================================
+
+// Card backgrounds
+// $card-black-background:      #27293d;  // Default card background
+// $card-black-border:          #2b3553;  // Card border color
+
+// Table colors
+// $table-dark-bg:              #27293d;
+// $table-dark-border:          #2b3553;
+// $table-dark-hover:           #1e1e2e;
+
+// ============================================================================
+// TEXT COLORS
+// ============================================================================
+
+// Text opacity variations
+// $opacity-8:                  rgba(255,255,255, .8);  // Primary text
+// $opacity-6:                  rgba(255,255,255, .6);  // Secondary text
+// $opacity-5:                  rgba(255,255,255, .5);  // Muted text
+// $opacity-2:                  rgba(255,255,255, .2);  // Very muted
+// $opacity-1:                  rgba(255,255,255, .1);  // Borders/dividers
+
+// ============================================================================
+// BUTTON CUSTOMIZATIONS
+// ============================================================================
+
+// Button state colors (hover/focus effects)
+// $primary-states:       #ba54f5;  // Darker/lighter version of primary
+// $success-states:       #0098f0;  // Darker/lighter version of success
+// $info-states:          #3358f4;  // Darker/lighter version of info
+// $warning-states:       #ff6491;  // Darker/lighter version of warning
+// $danger-states:        #ec250d;  // Darker/lighter version of danger
+
+// ============================================================================
+// CUSTOM DESIGNER THEMES
+// ============================================================================
+// Comment out the active theme above and uncomment ONE of these presets
+
+// ---------- THEME 2: 🔮 MYSTIC DUSK + AURORA VEINS ----------
+// Ethereal twilight with aurora highlights
+// $primary:                    #c084fc;  // Lavender Mist
+// $secondary:                  #1c2541;  // Indigo
+// $success:                    #16a085;  // Seafoam Green
+// $info:                       #8b5cf6;  // Purple
+// $warning:                    #f39c12;  // Warm Gold
+// $danger:                     #ef4444;  // Soft Red
+// $background-black:           #101820;  // Deep Ash
+// $background-states-black:    #1c2541;  // Indigo
+// $card-black-background:      #1c2541;  // Indigo cards
+// $opacity-8:                  rgba(224, 230, 235, .9);
+// $opacity-6:                  rgba(224, 230, 235, .7);
+
+// ---------- THEME 3: ⚡ CYBER ASH + LUMINOUS SPARKS ----------
+// Energetic with strong contrasts
+// $primary:                    #e84393;  // Magenta Glow
+// $secondary:                  #1f2933;  // Soft Ash
+// $success:                    #a3e635;  // Lime Green
+// $info:                       #3b82f6;  // Electric Blue
+// $warning:                    #fbbf24;  // Bright Yellow
+// $danger:                     #f43f5e;  // Hot Pink
+// $background-black:           #121212;  // Dark Graphite
+// $background-states-black:    #1f2933;  // Soft Ash
+// $card-black-background:      #1f2933;  // Soft Ash cards
+// $opacity-8:                  rgba(255, 255, 255, .95);
+// $opacity-6:                  rgba(255, 255, 255, .75);
+
+// ---------- THEME 4: 🌊 ASH GREY & DEEP SEA BLUE ----------
+// Calm modern look with subtle orange/purple accents
+// $primary:                    #ff8c42;  // Soft Orange highlight
+// $secondary:                  #34495e;  // Slate steel blue
+// $success:                    #1abc9c;  // Calm Teal
+// $info:                       #3498db;  // Sea Blue
+// $warning:                    #f39c12;  // Golden
+// $danger:                     #e74c3c;  // Coral Red
+// $background-black:           #0f1419;  // Deep ash grey
+// $background-states-black:    #1a222b;  // Slate blue-grey
+// $card-black-background:      #1a222b;  // Slate blue-grey cards
+// $sidebar-background:         #2c3e50;  // Deep sea blue (custom)
+// $opacity-8:                  rgba(224, 230, 235, .9);  // Light ash grey
+// $opacity-6:                  rgba(157, 168, 180, .8);  // Muted blue-grey
+
+// ============================================================================
+// QUICK THEME PRESETS
+// ============================================================================
+// Original presets from Black Dashboard
+
+// ---------- PRESET 1: Professional Blue ----------
+// $primary:                    #2c7be5;
+// $success:                    #00d97e;
+// $info:                       #39afd1;
+// $warning:                    #f6c343;
+// $danger:                     #e63757;
+// $background-black:           #0f1419;
+// $card-black-background:      #1a1f29;
+
+// ---------- PRESET 2: Hacker Green ----------
+// $primary:                    #00ff00;
+// $success:                    #00ff00;
+// $info:                       #00ffff;
+// $warning:                    #ffff00;
+// $danger:                     #ff0000;
+// $background-black:           #000000;
+// $card-black-background:      #0a0a0a;
+// $opacity-8:                  rgba(0,255,0, .8);
+// $opacity-6:                  rgba(0,255,0, .6);
+
+// ---------- PRESET 3: Minimal Monochrome ----------
+// $primary:                    #ffffff;
+// $success:                    #ffffff;
+// $info:                       #cccccc;
+// $warning:                    #999999;
+// $danger:                     #666666;
+// $background-black:           #000000;
+// $card-black-background:      #111111;
+
+// ---------- PRESET 4: Sunset Orange ----------
+// $primary:                    #ff6b6b;
+// $success:                    #51cf66;
+// $info:                       #339af0;
+// $warning:                    #ff922b;
+// $danger:                     #c92a2a;
+// $background-black:           #1f1f23;
+// $card-black-background:      #2a2a2e;
+
+// ============================================================================
+// ADVANCED CUSTOMIZATIONS
+// ============================================================================
+
+// Sidebar customization
+// $sidebar-background:         #1e1e2f;
+// $sidebar-text-color:         rgba(255,255,255,.8);
+// $sidebar-hover-background:   #e14eca;
+
+// Navigation bar
+// $navbar-background:          #27293d;
+// $navbar-text-color:          rgba(255,255,255,.8);
+
+// Form inputs
+// $input-background:           #27293d;
+// $input-border:               #2b3553;
+// $input-focus-border:         #e14eca;
+// $input-text-color:           rgba(255,255,255,.8);
+// $input-placeholder:          rgba(255,255,255,.4);
+
+// Modals
+// $modal-background:           #1e1e2e;
+// $modal-border:               rgba(255,255,255,.1);
+
+// Scrollbar
+// $scrollbar-background:       #1e1e2f;
+// $scrollbar-thumb:           #525f7f;
+// $scrollbar-thumb-hover:     #e14eca;
+
+// ============================================================================
+// BOOTSTRAP OVERRIDES
+// ============================================================================
+// These override core Bootstrap variables
+
+// Grid breakpoints
+// $grid-breakpoints: (
+//   xs: 0,
+//   sm: 576px,
+//   md: 768px,
+//   lg: 992px,
+//   xl: 1200px
+// );
+
+// Container max widths
+// $container-max-widths: (
+//   sm: 540px,
+//   md: 720px,
+//   lg: 960px,
+//   xl: 1140px
+// );
+
+// ============================================================================
+// TIPS FOR SAFE CUSTOMIZATION
+// ============================================================================
+/**
+ * 1. Always test your changes in development first
+ * 2. Change one color group at a time to see the effect
+ * 3. Use the browser's developer tools to preview colors
+ * 4. Keep a backup of your working configuration
+ * 5. Use the preset themes as a starting point
+ * 
+ * Color Best Practices:
+ * - Maintain sufficient contrast for accessibility (WCAG 2.1)
+ * - Keep success=green, warning=yellow/orange, danger=red for UX consistency
+ * - Test with both light and dark terminal backgrounds
+ * - Consider colorblind users (avoid red/green only distinctions)
+ * 
+ * Quick Testing:
+ * 1. Save this file with your changes
+ * 2. Run: npm run build (in front-end directory)
+ * 3. Refresh the browser to see changes
+ * 
+ * To revert changes:
+ * Simply comment out all variables to return to defaults
+ */

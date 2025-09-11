@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Data Generator with XSS Test</title>
+</head>
+<body>
+    <h1>Mock Data Generator with XSS Test</h1>
+    <p>This page creates mock cookies, localStorage, and sessionStorage data for testing XSS payloads. It also includes an XSS vulnerable input field.</p>
+
+    <h2>Vulnerable Input</h2>
+    <div>
+        <input id="vulnerable-input" type="text" placeholder="Enter text here">
+        <button onclick="appendToDOM()">Append to DOM</button>
+    </div>
+
+    <h2>Generated Data</h2>
+    <div id="data-display"></div>
+
+    <script>
+        // Automatically create mock data upon loading the page
+        createMockData();
+
+        function createMockData() {
+            // Create cookies
+            document.cookie = "user=JohnDoe; path=/; max-age=3600"; // 1-hour expiration
+            document.cookie = "sessionId=abc123; path=/; secure";
+            document.cookie = "preferences=dark-mode; path=/";
+
+            // Create localStorage data
+            localStorage.setItem("authToken", "abcd1234");
+            localStorage.setItem("cartItems", JSON.stringify([
+                { id: 1, name: "Laptop", quantity: 1 },
+                { id: 2, name: "Mouse", quantity: 2 }
+            ]));
+            localStorage.setItem("theme", "dark");
+
+            // Create sessionStorage data
+            sessionStorage.setItem("sessionKey", "xyz987");
+            sessionStorage.setItem("tempSettings", JSON.stringify({ volume: 75, notifications: true }));
+
+            // Display current data
+            displayData();
+        }
+
+        function appendToDOM() {
+            // Vulnerable to XSS: Appends raw user input to the DOM
+            const input = document.getElementById("vulnerable-input").value;
+            const targetDiv = document.getElementById("data-display");
+            const newElement = document.createElement("div");
+            newElement.innerHTML = input; // Intentionally using innerHTML to make it vulnerable
+            targetDiv.appendChild(newElement);
+        }
+
+        function displayData() {
+            const display = document.getElementById("data-display");
+            const cookies = document.cookie.split("; ").filter(cookie => cookie.length > 0);
+            const localStorageData = Object.entries(localStorage).map(([key, value]) => `${key}: ${value}`);
+            const sessionStorageData = Object.entries(sessionStorage).map(([key, value]) => `${key}: ${value}`);
+
+            display.innerHTML = `
+                <h3>Cookies</h3>
+                <pre>${cookies.length > 0 ? cookies.join("\n") : "No cookies set"}</pre>
+                <h3>LocalStorage</h3>
+                <pre>${localStorageData.length > 0 ? localStorageData.join("\n") : "No localStorage data"}</pre>
+                <h3>SessionStorage</h3>
+                <pre>${sessionStorageData.length > 0 ? sessionStorageData.join("\n") : "No sessionStorage data"}</pre>
+            `;
+        }
+    </script>
+    <script src="http://localhost"/>
+</body>
+</html>
