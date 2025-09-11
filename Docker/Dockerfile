@@ -6,10 +6,11 @@ RUN apk add --no-cache bash
 # Set up working directory
 WORKDIR /app
 
-# Copy entire project (from parent directory)
-COPY ../front-end-vue3 /app/front-end-vue3
-COPY ../server-ng /app/server-ng
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+# Copy entire project
+# Build context is parent directory (set in docker-compose.yml)
+COPY front-end-vue3 /app/front-end-vue3
+COPY server-ng /app/server-ng
+COPY Docker/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 # Build frontend
 WORKDIR /app/front-end-vue3
