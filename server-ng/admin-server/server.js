@@ -29,25 +29,23 @@ async function startWithSSL(port) {
     const app = await get_app_server();
     const https = require('https');
     const fs = require('fs');
-    const path = require('path');
+    const { waitForSSLCertificates } = require('./wait-for-ssl');
     
     // Try to find Greenlock certificates for the hostname
     const hostname = process.env.HOSTNAME;
-    const greenlockDir = path.join(__dirname, '..', 'greenlock.d');
-    const liveDir = path.join(greenlockDir, 'live', hostname);
     
     let httpsOptions = null;
     
-    // First try to use Greenlock certificates
-    if (hostname && fs.existsSync(liveDir)) {
-        try {
-            httpsOptions = {
-                cert: fs.readFileSync(path.join(liveDir, 'fullchain.pem')),
-                key: fs.readFileSync(path.join(liveDir, 'privkey.pem'))
-            };
+    // In production, wait for Let's Encrypt certificates
+    if (hostname && process.env.NODE_ENV === 'production') {
+        console.log('[Admin Server] Waiting for Let\'s Encrypt certificates...');
+        const certs = await waitForSSLCertificates(hostname, 60, 5000); // Wait up to 5 minutes
+        
+        if (certs) {
+            httpsOptions = certs;
             console.log('[Admin Server] Using Let\'s Encrypt certificates');
-        } catch (err) {
-            console.warn('[Admin Server] Failed to load Greenlock certificates:', err.message);
+        } else {
+            console.warn('[Admin Server] Let\'s Encrypt certificates not available after waiting');
         }
     }
     
@@ -64,32 +62,58 @@ async function startWithSSL(port) {
         }
     }
     
-    // Final fallback: self-signed certificates for development
+    // Final fallback
     if (!httpsOptions) {
         console.warn('[Admin Server] No valid SSL certificates found');
-        console.warn('[Admin Server] Generating self-signed certificate (NOT FOR PRODUCTION)');
         
-        const selfsigned = require('selfsigned');
-        const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
-        const pems = selfsigned.generate(attrs, { days: 365 });
-        
-        httpsOptions = {
-            cert: pems.cert,
-            key: pems.private
-        };
+        // In production without certs, start on HTTP with warning
+        if (process.env.NODE_ENV === 'production') {
+            console.warn('[Admin Server] WARNING: Starting without SSL in production!');
+            console.warn('[Admin Server] CRITICAL: Firewall port ' + port + ' to trusted IPs only!');
+            
+            // Start without SSL
+            const http = require('http');
+            const server = http.createServer(app);
+            
+            return new Promise((resolve) => {
+                server.listen(port, () => {
+                    console.log(`[Admin Server] Running on http://${hostname || 'localhost'}:${port} (NO SSL)`);
+                    console.log(`[Admin Server] IMPORTANT: This is insecure! Use firewall rules.`);
+                    if (process.env.CONTROL_PANEL_ENABLED === 'true') {
+                        console.log(`[Admin Server] Control panel at http://${hostname || 'localhost'}:${port}/admin`);
+                    }
+                    resolve(server);
+                });
+            });
+        } else {
+            // Development mode: generate self-signed
+            console.warn('[Admin Server] Generating self-signed certificate (DEV MODE)');
+            
+            const selfsigned = require('selfsigned');
+            const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
+            const pems = selfsigned.generate(attrs, { days: 365 });
+            
+            httpsOptions = {
+                cert: pems.cert,
+                key: pems.private
+            };
+        }
     }
     
-    const server = https.createServer(httpsOptions, app);
-    
-    return new Promise((resolve) => {
-        server.listen(port, () => {
-            console.log(`[Admin Server] Running on https://localhost:${port}`);
-            if (process.env.CONTROL_PANEL_ENABLED === 'true') {
-                console.log(`[Admin Server] Control panel enabled at https://localhost:${port}/admin`);
-            }
-            resolve(server);
+    // Only create HTTPS server if we have options
+    if (httpsOptions) {
+        const server = https.createServer(httpsOptions, app);
+        
+        return new Promise((resolve) => {
+            server.listen(port, () => {
+                console.log(`[Admin Server] Running on https://localhost:${port}`);
+                if (process.env.CONTROL_PANEL_ENABLED === 'true') {
+                    console.log(`[Admin Server] Control panel enabled at https://localhost:${port}/admin`);
+                }
+                resolve(server);
+            });
         });
-    });
+    }
 }
 
 module.exports = {
