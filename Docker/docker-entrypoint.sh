@@ -35,38 +35,13 @@ done
 
 echo "[Database] PostgreSQL is ready!"
 
-# Create Greenlock configuration directory and files
-echo "[SSL] Setting up Greenlock configuration..."
+# Create Greenlock directory structure
+echo "[SSL] Creating Greenlock directory structure..."
 mkdir -p /app/greenlock.d
-mkdir -p /app/greenlock.d/config
 mkdir -p /app/greenlock.d/accounts
 mkdir -p /app/greenlock.d/live
 
-# Create basic manager config for Greenlock v4
-cat > /app/greenlock.d/manager.json <<EOF
-{
-  "module": "@greenlock/manager",
-  "defaults": {
-    "subscriberEmail": "${SSL_CONTACT_EMAIL}",
-    "agreeToTerms": true,
-    "directoryUrl": "https://acme-v02.api.letsencrypt.org/directory"
-  }
-}
-EOF
-
-# Create initial sites configuration
-cat > /app/greenlock.d/config/sites.json <<EOF
-{
-  "sites": [
-    {
-      "subject": "${HOSTNAME}",
-      "altnames": ["${HOSTNAME}"]
-    }
-  ]
-}
-EOF
-
-echo "[SSL] Greenlock configured for domain: ${HOSTNAME}"
+echo "[SSL] Greenlock directory ready for domain: ${HOSTNAME}"
 
 echo "[INFO] Starting servers..."
 cd /app/server-ng

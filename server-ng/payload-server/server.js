@@ -24,51 +24,53 @@ async function start(port) {
 
 async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
+    const fs = require('fs');
+    const path = require('path');
     
     console.log(`[Greenlock] Initializing for domain: ${process.env.HOSTNAME}`);
     console.log(`[Greenlock] Email: ${process.env.SSL_CONTACT_EMAIL}`);
     
-    // Use the most basic Greenlock configuration that matches the old working setup
+    // Ensure the config directory exists
+    const configDir = '/app/greenlock.d';
+    if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
+    }
+    
+    // Create config.json for Greenlock v4
+    const configPath = path.join(configDir, 'config.json');
+    const config = {
+        defaults: {
+            store: {
+                module: "greenlock-store-fs"
+            },
+            challenges: {
+                "http-01": {
+                    module: "acme-http-01-standalone"
+                }
+            },
+            renewOffset: "-30d",
+            renewStagger: "3d",
+            accountKeyType: "EC-P256",
+            serverKeyType: "RSA-2048",
+            subscriberEmail: process.env.SSL_CONTACT_EMAIL,
+            agreeToTerms: true
+        },
+        sites: [{
+            subject: process.env.HOSTNAME,
+            altnames: [process.env.HOSTNAME]
+        }]
+    };
+    
+    // Write the config file
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log(`[Greenlock] Configuration written to ${configPath}`);
+    
+    // Initialize Greenlock with v4 proper configuration
     const greenlock = require('greenlock-express').init({
         packageRoot: '/app/server-ng',
-        configDir: '/app/greenlock.d',
+        configDir: configDir,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
-        cluster: false,
-        
-        // This is the key - telling Greenlock which domains to handle
-        approveDomains: function(opts, certs, cb) {
-            // Approve our domain
-            if (opts.domain === process.env.HOSTNAME) {
-                opts.email = process.env.SSL_CONTACT_EMAIL;
-                opts.agreeTos = true;
-                
-                // For v4, ensure we have the right structure
-                if (!opts.domains) {
-                    opts.domains = [process.env.HOSTNAME];
-                }
-                if (!opts.subject) {
-                    opts.subject = process.env.HOSTNAME;
-                }
-                
-                console.log(`[Greenlock] Approving domain: ${opts.domain}`);
-                
-                if (cb) {
-                    // v2/v3 style callback
-                    cb(null, { options: opts, certs: certs });
-                } else {
-                    // v4 style promise
-                    return Promise.resolve({ options: opts, certs: certs });
-                }
-            } else {
-                console.log(`[Greenlock] Rejecting unknown domain: ${opts.domain}`);
-                const err = new Error(`Domain not configured: ${opts.domain}`);
-                if (cb) {
-                    cb(err);
-                } else {
-                    return Promise.reject(err);
-                }
-            }
-        }
+        cluster: false
     });
     
     // Start the servers
