@@ -2,7 +2,7 @@
   <div>
     <div class="row">
       <div class="col-12">
-        <Card class="card-plain">
+        <Card>
           <div class="card-header">
             <div class="row">
               <div class="col-6">
@@ -21,7 +21,7 @@
               <p>No payloads created yet. Click "New Payload" to get started!</p>
             </div>
             
-            <div v-else class="table-responsive">
+            <div v-else class="table-wrapper">
               <table class="table">
                 <thead>
                   <tr>
@@ -397,39 +397,57 @@ onMounted(async () => {
   border-radius: 0.25rem;
 }
 
+/* Prevent horizontal overflow */
+.card-body {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 15px;
+}
+
+/* Table wrapper for responsive scrolling */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
 /* Table layout fixes for proper column sizing */
 .table {
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
+  min-width: 700px; /* Minimum width to prevent cramping */
 }
 
 /* Column width distribution */
 .payload-name {
-  width: 20%;
+  min-width: 150px;
+  max-width: 200px;
   word-wrap: break-word;
   white-space: normal;
 }
 
 .payload-description {
-  width: 35%;
+  min-width: 200px;
   word-wrap: break-word;
   white-space: normal;
   line-height: 1.4;
 }
 
 .payload-status {
-  width: 10%;
+  width: 100px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .payload-date {
-  width: 15%;
+  width: 140px;
   white-space: nowrap;
 }
 
 .payload-actions {
-  width: 20%;
+  width: 150px;
   white-space: nowrap;
+  text-align: right;
 }
 
 /* Ensure buttons stay in a row */
@@ -440,12 +458,18 @@ onMounted(async () => {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .payload-description {
-    width: 30%;
+  .table-wrapper {
+    margin: 0 -15px; /* Extend to card edges on mobile */
+    padding: 0 15px;
   }
   
-  .payload-actions {
-    width: 25%;
+  .table {
+    font-size: 0.875rem; /* Slightly smaller text on mobile */
+  }
+  
+  .payload-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
   }
 }
 
