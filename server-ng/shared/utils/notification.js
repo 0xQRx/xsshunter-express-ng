@@ -53,11 +53,42 @@ async function send_discord_notification(xss_payload_fire_data) {
 			cookiesValue = cookiesValue.substring(0, 1021) + '...';
 		}
 		
+		// Construct proper admin panel URL
+		console.log('[Discord Debug] Environment variables:');
+		console.log('  - process.env.HOSTNAME:', process.env.HOSTNAME);
+		console.log('  - process.env.ADMIN_PORT:', process.env.ADMIN_PORT);
+		console.log('  - process.env.DEV_MODE:', process.env.DEV_MODE);
+		console.log('  - process.env.NODE_ENV:', process.env.NODE_ENV);
+		
+		const isDevelopment = process.env.DEV_MODE === 'true' || process.env.NODE_ENV === 'development';
+		const adminPort = process.env.ADMIN_PORT || 8443;
+		
+		// Extract hostname without port from HOSTNAME env var
+		// HOSTNAME might be "localhost:3000" so we need just the hostname part
+		let hostname = process.env.HOSTNAME || 'localhost';
+		console.log('[Discord Debug] Original hostname:', hostname);
+		
+		if (hostname.includes(':')) {
+			hostname = hostname.split(':')[0];
+			console.log('[Discord Debug] Extracted hostname (removed port):', hostname);
+		}
+		
+		let adminPanelUrl;
+		if (isDevelopment) {
+			adminPanelUrl = `http://${hostname}:${adminPort}/admin`;
+		} else {
+			// In production, admin server runs on port 8443 with HTTPS
+			adminPanelUrl = `https://${hostname}:${adminPort}/admin`;
+		}
+		
+		console.log('[Discord Debug] Final admin panel URL:', adminPanelUrl);
+		console.log('[Discord Debug] isDevelopment:', isDevelopment);
+		
 		// Create Discord embed with essential data only
 		const discordPayload = {
 			embeds: [{
 				title: '🎯 XSS Payload Fired!',
-				description: `[📋 Open Admin Panel](https://${process.env.HOSTNAME}/admin)`,
+				description: `[📋 Open Admin Panel](${adminPanelUrl})`,
 				color: 15158332, // Red color
 				fields: [
 					{
