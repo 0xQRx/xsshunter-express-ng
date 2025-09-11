@@ -85,9 +85,8 @@ async function startWithSSL(port) {
         
         return new Promise((resolve) => {
             server.listen(port, () => {
-                console.log(`[Admin Server] Running on https://localhost:${port}`);
                 if (process.env.CONTROL_PANEL_ENABLED === 'true') {
-                    console.log(`[Admin Server] Control panel enabled at https://localhost:${port}/admin`);
+                    console.log(`[Admin Server] Control panel enabled.`);
                 }
                 resolve(server);
             });
