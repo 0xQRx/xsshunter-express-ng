@@ -24,12 +24,11 @@ async function start(port) {
 
 async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
-    const path = require('path');
     
-    // In production, use Greenlock for automatic SSL (matching original server.js)
+    // In production, use Greenlock for automatic SSL
     require('greenlock-express').init({
-        packageRoot: path.join(__dirname, '..'),  // Points to server-ng directory
-        configDir: './greenlock.d',  // Relative to packageRoot
+        packageRoot: '/app/server-ng',  // Absolute path
+        configDir: '/app/greenlock.d',  // Absolute path matching Docker volume
         cluster: false,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
     }).serve(app);

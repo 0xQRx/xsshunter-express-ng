@@ -18,7 +18,7 @@ async function waitForSSLCertificates(hostname, maxRetries = 60, retryDelay = 50
         return null;
     }
 
-    const greenlockDir = path.join(__dirname, '..', 'greenlock.d');
+    const greenlockDir = '/app/greenlock.d';  // Absolute path matching Docker setup
     const liveDir = path.join(greenlockDir, 'live', hostname);
     
     console.log(`[SSL Wait] Waiting for Let's Encrypt certificates for ${hostname}`);

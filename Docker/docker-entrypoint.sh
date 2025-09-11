@@ -35,21 +35,15 @@ done
 
 echo "[Database] PostgreSQL is ready!"
 
-# Create Greenlock config directory if it doesn't exist
-mkdir -p /app/greenlock.d
+# Set up Greenlock for SSL/TLS
+echo "[SSL] Initializing Greenlock..."
 
-# Create sites configuration for Greenlock if needed
-if [ ! -f /app/greenlock.d/config.json ]; then
-    echo "[SSL] Creating Greenlock configuration..."
-    cat > /app/greenlock.d/config.json <<EOF
-{
-  "sites": [{
-    "subject": "${HOSTNAME}",
-    "altnames": ["${HOSTNAME}"]
-  }]
-}
-EOF
-fi
+# Initialize Greenlock configuration (using absolute path that matches the volume mount)
+npx greenlock init --config-dir /app/greenlock.d --maintainer-email $SSL_CONTACT_EMAIL
+
+# Add the site/domain to Greenlock
+echo "[SSL] Adding domain ${HOSTNAME} to Greenlock..."
+npx greenlock add --subject $HOSTNAME --altnames "$HOSTNAME" --config-dir /app/greenlock.d
 
 echo "[INFO] Starting servers..."
 cd /app/server-ng
