@@ -32,16 +32,30 @@ async function startWithSSL(httpPort, httpsPort) {
         cluster: false,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
         agreeToTerms: true,
-        // Approve domains function
-        approveDomains: async (opts) => {
-            // Check if this is our configured domain
-            if (opts.domains.includes(process.env.HOSTNAME)) {
+        // Approve all incoming domains that match our hostname
+        approveDomains: (opts, certs, cb) => {
+            // Approve our configured domain
+            if (opts.domain === process.env.HOSTNAME) {
+                opts.domains = [process.env.HOSTNAME];
                 opts.email = process.env.SSL_CONTACT_EMAIL;
                 opts.agreeTos = true;
-                opts.communityMember = false;
-                return opts;
+                
+                console.log(`[Greenlock] Approving domain: ${opts.domain}`);
+                
+                // Use callback style
+                if (cb) {
+                    cb(null, { options: opts, certs: certs });
+                } else {
+                    return Promise.resolve({ options: opts, certs: certs });
+                }
+            } else {
+                const error = new Error(`Domain not approved: ${opts.domain}`);
+                if (cb) {
+                    cb(error);
+                } else {
+                    return Promise.reject(error);
+                }
             }
-            throw new Error('Domain not configured: ' + opts.domains.join(', '));
         }
     });
     
