@@ -1,6 +1,6 @@
 'use strict';
 
-const get_app_server = require('./app.js');
+const get_app_server = require('./app-refactored.js');
 
 // Check if we're running in development mode
 const isDevelopment = process.env.DEV_MODE === 'true' || process.env.NODE_ENV === 'development';
