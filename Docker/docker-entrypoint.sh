@@ -38,12 +38,13 @@ echo "[Database] PostgreSQL is ready!"
 # Set up Greenlock for SSL/TLS
 echo "[SSL] Initializing Greenlock..."
 
-# Initialize Greenlock configuration (using absolute path that matches the volume mount)
-npx greenlock init --config-dir /app/greenlock.d --maintainer-email $SSL_CONTACT_EMAIL
+# Initialize Greenlock in the directory where it will be used
+cd /app
+npx greenlock init --config-dir ./greenlock.d --maintainer-email $SSL_CONTACT_EMAIL
 
 # Add the site/domain to Greenlock
 echo "[SSL] Adding domain ${HOSTNAME} to Greenlock..."
-npx greenlock add --subject $HOSTNAME --altnames "$HOSTNAME" --config-dir /app/greenlock.d
+npx greenlock add --subject $HOSTNAME --altnames "$HOSTNAME"
 
 echo "[INFO] Starting servers..."
 cd /app/server-ng
