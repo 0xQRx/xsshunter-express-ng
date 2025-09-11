@@ -31,6 +31,18 @@ async function startWithSSL(httpPort, httpsPort) {
         configDir: '/app/greenlock.d',  // Absolute path matching Docker volume
         cluster: false,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
+        agreeToTerms: true,
+        // Approve domains function
+        approveDomains: async (opts) => {
+            // Check if this is our configured domain
+            if (opts.domains.includes(process.env.HOSTNAME)) {
+                opts.email = process.env.SSL_CONTACT_EMAIL;
+                opts.agreeTos = true;
+                opts.communityMember = false;
+                return opts;
+            }
+            throw new Error('Domain not configured: ' + opts.domains.join(', '));
+        }
     });
     
     // Start the servers and wait for ready

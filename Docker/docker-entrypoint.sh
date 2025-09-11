@@ -35,16 +35,37 @@ done
 
 echo "[Database] PostgreSQL is ready!"
 
-# Set up Greenlock for SSL/TLS
-echo "[SSL] Initializing Greenlock..."
+# Create Greenlock configuration directory and files
+echo "[SSL] Setting up Greenlock configuration..."
+mkdir -p /app/greenlock.d
 
-# Initialize Greenlock in the directory where it will be used
-cd /app
-npx greenlock init --config-dir ./greenlock.d --maintainer-email $SSL_CONTACT_EMAIL
+# Create the greenlock.json configuration file
+cat > /app/greenlock.d/greenlock.json <<EOF
+{
+  "manager": {
+    "module": "@greenlock/manager"
+  },
+  "store": {
+    "module": "greenlock-store-fs",
+    "basePath": "/app/greenlock.d"
+  }
+}
+EOF
 
-# Add the site/domain to Greenlock
-echo "[SSL] Adding domain ${HOSTNAME} to Greenlock..."
-npx greenlock add --subject $HOSTNAME --altnames "$HOSTNAME"
+# Create the site configuration
+mkdir -p /app/greenlock.d/config
+cat > /app/greenlock.d/config/sites.json <<EOF
+{
+  "sites": [
+    {
+      "subject": "${HOSTNAME}",
+      "altnames": ["${HOSTNAME}"]
+    }
+  ]
+}
+EOF
+
+echo "[SSL] Greenlock configured for domain: ${HOSTNAME}"
 
 echo "[INFO] Starting servers..."
 cd /app/server-ng
