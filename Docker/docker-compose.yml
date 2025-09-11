@@ -64,7 +64,8 @@ services:
     # Comment out if you're using an external SQL
     # server and have commented out the DB section.
     depends_on:
-      - postgresdb
+      postgresdb:
+        condition: service_healthy
   # Postgres server to store injection data (not including
   # screenshots which are stored separately).
   # NOTE: If you're using an external SQL server, you can comment
@@ -86,3 +87,8 @@ services:
       POSTGRES_PASSWORD: xsshunterexpress
     volumes:
       - ./postgres-db-data:/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xsshunterexpress -d xsshunterexpress"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
