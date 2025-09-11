@@ -26,17 +26,24 @@ async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
     
     // In production, use Greenlock for automatic SSL
-    require('greenlock-express').init({
+    const greenlock = require('greenlock-express').init({
         packageRoot: '/app/server-ng',  // Absolute path
         configDir: '/app/greenlock.d',  // Absolute path matching Docker volume
         cluster: false,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
-    }).serve(app);
+    });
     
-    console.log(`[Payload Server] Starting with SSL/TLS via Let's Encrypt`);
-    console.log(`[Payload Server] HTTP: ${httpPort}, HTTPS: ${httpsPort}`);
-    
-    return app;
+    // Start the servers and wait for ready
+    return new Promise((resolve) => {
+        const servers = greenlock.serve(app);
+        
+        // Give it a moment to start up
+        setTimeout(() => {
+            console.log(`[Payload Server] Started with SSL/TLS via Let's Encrypt`);
+            console.log(`[Payload Server] HTTP on port ${httpPort}, HTTPS on port ${httpsPort}`);
+            resolve(servers);
+        }, 2000);
+    });
 }
 
 module.exports = {
