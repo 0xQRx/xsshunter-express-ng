@@ -8,11 +8,11 @@ const path = require('path');
 /**
  * Wait for Let's Encrypt certificates with retries
  * @param {string} hostname - The hostname to check certificates for
- * @param {number} maxRetries - Maximum number of retries (default: 60)
- * @param {number} retryDelay - Delay between retries in ms (default: 5000)
+ * @param {number} maxRetries - Maximum number of retries (default: 20)
+ * @param {number} retryDelay - Delay between retries in ms (default: 30000)
  * @returns {Promise<{cert: Buffer, key: Buffer} | null>}
  */
-async function waitForSSLCertificates(hostname, maxRetries = 60, retryDelay = 5000) {
+async function waitForSSLCertificates(hostname, maxRetries = 20, retryDelay = 30000) {
     if (!hostname) {
         console.log('[SSL Wait] No hostname provided, skipping certificate wait');
         return null;
@@ -23,6 +23,15 @@ async function waitForSSLCertificates(hostname, maxRetries = 60, retryDelay = 50
     
     console.log(`[SSL Wait] Waiting for Let's Encrypt certificates for ${hostname}`);
     console.log(`[SSL Wait] Checking directory: ${liveDir}`);
+    
+    // Show banner on first attempt
+    console.log('\n' + '='.repeat(60));
+    console.log('📌 IMPORTANT: Certificate Generation');
+    console.log('='.repeat(60));
+    console.log(`To trigger certificate generation, please visit:`);
+    console.log(`   https://${hostname}`);
+    console.log(`\nThe certificate will be automatically generated on first visit.`);
+    console.log('='.repeat(60) + '\n');
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
@@ -44,7 +53,11 @@ async function waitForSSLCertificates(hostname, maxRetries = 60, retryDelay = 50
         }
         
         if (attempt < maxRetries) {
-            console.log(`[SSL Wait] Attempt ${attempt}/${maxRetries} - Certificates not ready yet, waiting ${retryDelay/1000}s...`);
+            if (attempt === 1) {
+                console.log(`[SSL Wait] Certificates not found, waiting... (checking every ${retryDelay/1000}s)`);
+            } else if (attempt % 5 === 0) {
+                console.log(`[SSL Wait] Still waiting... (${attempt}/${maxRetries} attempts)`);
+            }
             await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
     }

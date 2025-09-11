@@ -39,7 +39,7 @@ async function startWithSSL(port) {
     // In production, wait for Let's Encrypt certificates
     if (hostname && process.env.NODE_ENV === 'production') {
         console.log('[Admin Server] Waiting for Let\'s Encrypt certificates...');
-        const certs = await waitForSSLCertificates(hostname, 60, 5000); // Wait up to 5 minutes
+        const certs = await waitForSSLCertificates(hostname); // Uses default 20 retries, 30s each
         
         if (certs) {
             httpsOptions = certs;
@@ -62,42 +62,21 @@ async function startWithSSL(port) {
         }
     }
     
-    // Final fallback
+    // Final fallback - generate self-signed certificate
     if (!httpsOptions) {
         console.warn('[Admin Server] No valid SSL certificates found');
+        console.warn('[Admin Server] Generating self-signed certificate (fallback)');
         
-        // In production without certs, start on HTTP with warning
-        if (process.env.NODE_ENV === 'production') {
-            console.warn('[Admin Server] WARNING: Starting without SSL in production!');
-            console.warn('[Admin Server] CRITICAL: Firewall port ' + port + ' to trusted IPs only!');
-            
-            // Start without SSL
-            const http = require('http');
-            const server = http.createServer(app);
-            
-            return new Promise((resolve) => {
-                server.listen(port, () => {
-                    console.log(`[Admin Server] Running on http://${hostname || 'localhost'}:${port} (NO SSL)`);
-                    console.log(`[Admin Server] IMPORTANT: This is insecure! Use firewall rules.`);
-                    if (process.env.CONTROL_PANEL_ENABLED === 'true') {
-                        console.log(`[Admin Server] Control panel at http://${hostname || 'localhost'}:${port}/admin`);
-                    }
-                    resolve(server);
-                });
-            });
-        } else {
-            // Development mode: generate self-signed
-            console.warn('[Admin Server] Generating self-signed certificate (DEV MODE)');
-            
-            const selfsigned = require('selfsigned');
-            const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
-            const pems = selfsigned.generate(attrs, { days: 365 });
-            
-            httpsOptions = {
-                cert: pems.cert,
-                key: pems.private
-            };
-        }
+        const selfsigned = require('selfsigned');
+        const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
+        const pems = selfsigned.generate(attrs, { days: 365 });
+        
+        httpsOptions = {
+            cert: pems.cert,
+            key: pems.private
+        };
+        
+        console.warn('[Admin Server] Using self-signed certificate - browser will show security warning');
     }
     
     // Only create HTTPS server if we have options

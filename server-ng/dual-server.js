@@ -92,12 +92,10 @@ if (!isDevelopment && !process.env.SSL_CONTACT_EMAIL) {
                 
                 // Admin server will automatically find and use Greenlock certificates
                 await adminServer.startWithSSL(adminPort);
-                console.log(`[Admin Server] Ready at https://${process.env.HOSTNAME}:${adminPort}`);
-                console.log(`[Admin Panel] Access at https://${process.env.HOSTNAME}:${adminPort}/admin`);
+                console.log(`[Admin Server] Ready at https://${process.env.HOSTNAME}:${adminPort}/admin`);
                 
                 console.log('\n[Security Notice]');
                 console.log(`Admin port ${adminPort} should be firewalled to trusted IPs only`);
-                console.log('Example: ufw allow from YOUR_IP to any port ' + adminPort);
             } else {
                 console.log('\n[Admin Server] Skipped - Control panel disabled');
                 console.log('[Admin Server] Set CONTROL_PANEL_ENABLED=true to enable');

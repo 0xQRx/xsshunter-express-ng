@@ -147,14 +147,19 @@ async function handleJSCallback(req, res) {
 
         await PayloadFireResults.create(payload_fire_result);
 
-        // Send the notification in a separate try/catch to avoid interrupting
-        // the callback if the notification fails.
-        try {
-            // Send email and Discord notifications
-            await notification.send_email_notification(payload_fire_result);
-            await notification.send_discord_notification(payload_fire_result);
-        } catch (error) {
-            console.error(`Caught error when trying to send notification: ${error}`);
+        // Send notifications independently so one failure doesn't block the other
+        // Check if email notifications are enabled
+        if (process.env.SMTP_EMAIL_NOTIFICATIONS_ENABLED === 'true') {
+            notification.send_email_notification(payload_fire_result)
+                .then(() => console.log('[Notification] Email sent successfully'))
+                .catch(error => console.error('[Notification] Email failed:', error.message));
+        }
+        
+        // Check if Discord notifications are enabled
+        if (process.env.DISCORD_WEBHOOK_URL && process.env.DISCORD_WEBHOOK_URL.trim() !== '') {
+            notification.send_discord_notification(payload_fire_result)
+                .then(() => console.log('[Notification] Discord sent successfully'))
+                .catch(error => console.error('[Notification] Discord failed:', error.message));
         }
 
         // Return payload ID and session token for subsequent requests
