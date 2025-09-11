@@ -22,13 +22,14 @@ async function start(port) {
     });
 }
 
-async function startWithSSL(httpPort, httpsPort, sslConfig) {
+async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
+    const path = require('path');
     
-    // In production, use Greenlock for automatic SSL
+    // In production, use Greenlock for automatic SSL (matching original server.js)
     require('greenlock-express').init({
-        packageRoot: __dirname,
-        configDir: '../../greenlock.d',
+        packageRoot: path.join(__dirname, '..'),  // Points to server-ng directory
+        configDir: './greenlock.d',  // Relative to packageRoot
         cluster: false,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
     }).serve(app);

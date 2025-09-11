@@ -25,24 +25,58 @@ async function start(port) {
     });
 }
 
-async function startWithSSL(port, sslConfig) {
+async function startWithSSL(port) {
     const app = await get_app_server();
     const https = require('https');
     const fs = require('fs');
+    const path = require('path');
     
-    // Use provided SSL config or try to load from files
-    let httpsOptions = sslConfig;
+    // Try to find Greenlock certificates for the hostname
+    const hostname = process.env.HOSTNAME;
+    const greenlockDir = path.join(__dirname, '..', 'greenlock.d');
+    const liveDir = path.join(greenlockDir, 'live', hostname);
     
-    if (!httpsOptions && process.env.SSL_CERT_PATH && process.env.SSL_KEY_PATH) {
-        httpsOptions = {
-            cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-            key: fs.readFileSync(process.env.SSL_KEY_PATH)
-        };
+    let httpsOptions = null;
+    
+    // First try to use Greenlock certificates
+    if (hostname && fs.existsSync(liveDir)) {
+        try {
+            httpsOptions = {
+                cert: fs.readFileSync(path.join(liveDir, 'fullchain.pem')),
+                key: fs.readFileSync(path.join(liveDir, 'privkey.pem'))
+            };
+            console.log('[Admin Server] Using Let\'s Encrypt certificates');
+        } catch (err) {
+            console.warn('[Admin Server] Failed to load Greenlock certificates:', err.message);
+        }
     }
     
+    // Fallback to environment variable paths
+    if (!httpsOptions && process.env.SSL_CERT_PATH && process.env.SSL_KEY_PATH) {
+        try {
+            httpsOptions = {
+                cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+                key: fs.readFileSync(process.env.SSL_KEY_PATH)
+            };
+            console.log('[Admin Server] Using certificates from environment variables');
+        } catch (err) {
+            console.warn('[Admin Server] Failed to load certificates from env paths:', err.message);
+        }
+    }
+    
+    // Final fallback: self-signed certificates for development
     if (!httpsOptions) {
-        console.error('[Admin Server] No SSL configuration provided');
-        throw new Error('SSL configuration required for production admin server');
+        console.warn('[Admin Server] No valid SSL certificates found');
+        console.warn('[Admin Server] Generating self-signed certificate (NOT FOR PRODUCTION)');
+        
+        const selfsigned = require('selfsigned');
+        const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
+        const pems = selfsigned.generate(attrs, { days: 365 });
+        
+        httpsOptions = {
+            cert: pems.cert,
+            key: pems.private
+        };
     }
     
     const server = https.createServer(httpsOptions, app);

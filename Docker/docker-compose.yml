@@ -38,8 +38,10 @@ services:
       # THERE IS NO NEED TO MODIFY BELOW THIS LINE
       # ------------------------------------------
       # FEEL FREE, BUT KNOW WHAT YOU'RE DOING.
+      # Admin server port (firewalled to trusted IPs only)
+      - ADMIN_PORT=8443
       # Where XSS screenshots are stored
-      - SCREENSHOTS_DIR=/app/server/payload-fire-images
+      - SCREENSHOTS_DIR=/app/server-ng/payload-fire-images
       - DATABASE_NAME=xsshunterexpress
       - DATABASE_USER=xsshunterexpress
       - DATABASE_PASSWORD=xsshunterexpress
@@ -48,14 +50,15 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8443:8443"  # Admin panel port (should be firewalled)
     volumes:
       # Stores the SSL/TLS certificates and keys
       # in the "ssldata" directory.
       # Your certificates are automatically renewed
       # via LetsEncrypt, no extra work needed!
-      - ./ssldata:/app/server/greenlock.d
+      - ./ssldata:/app/greenlock.d
       # Directory where payload fire images are stored.
-      - ./server/payload-fire-images:/app/server/payload-fire-images
+      - ../server-ng/payload-fire-images:/app/server-ng/payload-fire-images
     # Comment out if you're using an external SQL
     # server and have commented out the DB section.
     depends_on:

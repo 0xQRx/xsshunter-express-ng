@@ -1,31 +1,41 @@
-FROM node:22
+FROM node:22-alpine
 
-# Set up directory for the server
-RUN mkdir /app/
-WORKDIR /app/
+# Install bash for entrypoint script
+RUN apk add --no-cache bash
 
-# Copy front-end over and build
-COPY front-end-vue3/ /app/front-end-vue3/
-WORKDIR /app/front-end-vue3/
+# Set up working directory
+WORKDIR /app
+
+# Copy entire project (from parent directory)
+COPY ../front-end-vue3 /app/front-end-vue3
+COPY ../server-ng /app/server-ng
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+
+# Build frontend
+WORKDIR /app/front-end-vue3
 RUN npm ci
 RUN npm run build
 
-# Copy entire server directory
-WORKDIR /app/
-COPY server/ /app/server/
-WORKDIR /app/server/
-RUN npm ci
+# Install server dependencies
+WORKDIR /app/server-ng
+RUN npm ci --production
 
-# Copy other necessary files  
-COPY docker-entrypoint.sh /app/
+# Create necessary directories
+RUN mkdir -p /app/greenlock.d \
+    && mkdir -p /app/server-ng/payload-fire-images
+
+# Make entrypoint executable
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Set working directory to server for execution
-WORKDIR /app/server/
+# Set working directory for execution
+WORKDIR /app/server-ng
 
-# Expose both HTTP and HTTPS ports
+# Expose ports
+# 80/443 for payload server (auto-SSL via Greenlock)
+# 8443 for admin panel (should be firewalled)
 EXPOSE 80
 EXPOSE 443
+EXPOSE 8443
 
-# Start the server
+# Start the application
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

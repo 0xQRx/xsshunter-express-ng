@@ -90,15 +90,10 @@ if (!isDevelopment && !process.env.SSL_CONTACT_EMAIL) {
             if (process.env.CONTROL_PANEL_ENABLED === 'true') {
                 console.log('\n[Admin Server] Starting...');
                 
-                // Admin server needs SSL config
-                // It can share the same certificates from Greenlock
-                const sslConfig = {
-                    // These will be populated by Greenlock or provided via env vars
-                };
-                
-                await adminServer.startWithSSL(adminPort, sslConfig);
-                console.log(`[Admin Server] Ready at https://localhost:${adminPort}`);
-                console.log(`[Admin Panel] Access at https://localhost:${adminPort}/admin`);
+                // Admin server will automatically find and use Greenlock certificates
+                await adminServer.startWithSSL(adminPort);
+                console.log(`[Admin Server] Ready at https://${process.env.HOSTNAME}:${adminPort}`);
+                console.log(`[Admin Panel] Access at https://${process.env.HOSTNAME}:${adminPort}/admin`);
                 
                 console.log('\n[Security Notice]');
                 console.log(`Admin port ${adminPort} should be firewalled to trusted IPs only`);
