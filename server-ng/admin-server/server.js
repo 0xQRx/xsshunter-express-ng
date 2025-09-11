@@ -13,7 +13,6 @@ async function start(port) {
     
     return new Promise((resolve) => {
         server.listen(port, () => {
-            console.log(`[Admin Server] Running on http://localhost:${port}`);
             if (isDevelopment) {
                 console.log(`[Admin Server] Running in DEVELOPMENT mode`);
             }

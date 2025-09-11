@@ -29,8 +29,6 @@ async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
     
     console.log(`[Dual Protocol] Setting up servers for ${process.env.HOSTNAME}`);
-    console.log(`[Dual Protocol] HTTP will serve all paths without redirects`);
-    console.log(`[Dual Protocol] HTTPS will serve all paths with SSL`);
     
     // Start simple HTTP server - no redirects, serve everything
     const httpServer = http.createServer(app);
