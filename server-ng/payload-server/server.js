@@ -25,48 +25,62 @@ async function start(port) {
 async function startWithSSL(httpPort, httpsPort) {
     const app = await get_app_server();
     
-    // In production, use Greenlock for automatic SSL
+    console.log(`[Greenlock] Initializing for domain: ${process.env.HOSTNAME}`);
+    console.log(`[Greenlock] Email: ${process.env.SSL_CONTACT_EMAIL}`);
+    
+    // Use the most basic Greenlock configuration that matches the old working setup
     const greenlock = require('greenlock-express').init({
-        packageRoot: '/app/server-ng',  // Absolute path
-        configDir: '/app/greenlock.d',  // Absolute path matching Docker volume
-        cluster: false,
+        packageRoot: '/app/server-ng',
+        configDir: '/app/greenlock.d',
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
-        agreeToTerms: true,
-        // Approve all incoming domains that match our hostname
-        approveDomains: (opts, certs, cb) => {
-            // Approve our configured domain
+        cluster: false,
+        
+        // This is the key - telling Greenlock which domains to handle
+        approveDomains: function(opts, certs, cb) {
+            // Approve our domain
             if (opts.domain === process.env.HOSTNAME) {
-                opts.domains = [process.env.HOSTNAME];
                 opts.email = process.env.SSL_CONTACT_EMAIL;
                 opts.agreeTos = true;
                 
+                // For v4, ensure we have the right structure
+                if (!opts.domains) {
+                    opts.domains = [process.env.HOSTNAME];
+                }
+                if (!opts.subject) {
+                    opts.subject = process.env.HOSTNAME;
+                }
+                
                 console.log(`[Greenlock] Approving domain: ${opts.domain}`);
                 
-                // Use callback style
                 if (cb) {
+                    // v2/v3 style callback
                     cb(null, { options: opts, certs: certs });
                 } else {
+                    // v4 style promise
                     return Promise.resolve({ options: opts, certs: certs });
                 }
             } else {
-                const error = new Error(`Domain not approved: ${opts.domain}`);
+                console.log(`[Greenlock] Rejecting unknown domain: ${opts.domain}`);
+                const err = new Error(`Domain not configured: ${opts.domain}`);
                 if (cb) {
-                    cb(error);
+                    cb(err);
                 } else {
-                    return Promise.reject(error);
+                    return Promise.reject(err);
                 }
             }
         }
     });
     
-    // Start the servers and wait for ready
+    // Start the servers
     return new Promise((resolve) => {
+        console.log(`[Greenlock] Starting HTTP on ${httpPort}, HTTPS on ${httpsPort}`);
         const servers = greenlock.serve(app);
         
         // Give it a moment to start up
         setTimeout(() => {
             console.log(`[Payload Server] Started with SSL/TLS via Let's Encrypt`);
-            console.log(`[Payload Server] HTTP on port ${httpPort}, HTTPS on port ${httpsPort}`);
+            console.log(`[Payload Server] Domain: ${process.env.HOSTNAME}`);
+            console.log(`[Payload Server] HTTP redirect and HTTPS ready`);
             resolve(servers);
         }, 2000);
     });
