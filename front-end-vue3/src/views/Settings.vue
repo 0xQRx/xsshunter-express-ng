@@ -163,6 +163,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseInput from '@/components/Inputs/BaseInput.vue'
 import api_request from '@/services/api'
 import { useToast } from '@/composables/useToast'
+import logger from '@/utils/logger'
 
 const { showSuccess, showError } = useToast()
 
@@ -197,7 +198,7 @@ const generate_new_correlation_api_key = async () => {
 
 const pull_latest_settings = async () => {
   try {
-    console.log('Fetching settings...')
+    logger.debug('Fetching settings...')
     const settings_keys = [
       'chainload_uri',
       'correlation_api_key',
@@ -210,7 +211,7 @@ const pull_latest_settings = async () => {
 
     // Pull settings
     const settings_result = await api_request.get_settings()
-    console.log('Settings result:', settings_result)
+    logger.debug('Settings result:', settings_result)
     
     if (settings_result && settings_result.result) {
       const settings = settings_result.result
@@ -223,10 +224,10 @@ const pull_latest_settings = async () => {
       send_discord_alerts.value = settings.send_discord_alerts !== undefined ? settings.send_discord_alerts : true
       email_configured.value = settings.email_configured || false
       discord_configured.value = settings.discord_configured || false
-      console.log('Settings loaded successfully')
+      logger.debug('Settings loaded successfully')
     }
   } catch (error) {
-    console.error('Error fetching settings:', error)
+    logger.error('Error fetching settings:', error)
   }
 }
 
@@ -290,7 +291,7 @@ const copyApiKey = () => {
 
 // Mounted
 onMounted(async () => {
-  console.log('Settings component mounted')
+  logger.debug('Settings component mounted')
   await pull_latest_settings()
 })
 </script>

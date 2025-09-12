@@ -20,7 +20,7 @@ RUN npm run build
 
 # Install server dependencies
 WORKDIR /app/server-ng
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 # Create necessary directories
 RUN mkdir -p /app/greenlock.d \

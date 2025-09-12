@@ -8,6 +8,7 @@
               <h1><i class="fas fa-file-code"></i> XSS Payloads</h1>
             </div>
             <Card v-for="payload in payloads" :key="payload.title">
+              <!-- v-html is safe here: titles are hardcoded strings with only <code> tags, no user input -->
               <h4 class="card-title" v-html="payload.title"></h4>
               <h6 class="card-subtitle mb-2 text-muted">{{ payload.description }}</h6>
               <p class="card-text">
