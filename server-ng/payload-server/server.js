@@ -80,38 +80,39 @@ async function startWithSSL(httpPort, httpsPort) {
         console.log(`[Greenlock] Configuration created for ${process.env.HOSTNAME}`);
     }
 
-    // Initialize Greenlock v4
-    console.log(`[Greenlock] Initializing for HTTPS only (HTTP already bound)`);
+    // Since our HTTP server is already bound to port 80,
+    // Greenlock's serve() will detect this and only bind to 443
+    // This gives us the best of both worlds:
+    // - Our HTTP server (no redirects) on port 80
+    // - Greenlock's HTTPS with auto-renewal on port 443
+    
+    console.log(`[Greenlock] Initializing (port 80 already bound by our HTTP server)`);
+    
     const greenlock = require('greenlock-express').init({
         packageRoot: '/app/server-ng',
         configDir: configDir,
         maintainerEmail: process.env.SSL_CONTACT_EMAIL,
         cluster: false
     });
+    
+    // Greenlock.serve() returns servers object
+    // Since port 80 is taken, it should only bind to 443
+    const servers = greenlock.serve(app);
+    
+    console.log(`[HTTPS Server] Greenlock managing port ${httpsPort} with auto-renewal`);
+    console.log(`\n[Payload Server] Ready! Both HTTP and HTTPS are serving payloads`);
+    
+    // Note about first-time certificate generation
+    const liveDir = path.join(configDir, 'live', process.env.HOSTNAME);
+    if (!fs.existsSync(liveDir)) {
+        console.log(`\n[First Run] Visit https://${process.env.HOSTNAME} to trigger certificate generation`);
+        console.log(`[First Run] ACME challenges will use our HTTP server on port ${httpPort}`);
+    }
 
-    // HTTPS server with auto-cert + auto-renew (no restart needed!)
-    // Greenlock will only handle HTTPS since we already have HTTP
-    const httpsServer = greenlock.httpsServer(app);
-
-    // Start HTTPS server
-    await new Promise((resolve) => {
-        httpsServer.listen(httpsPort, () => {
-            console.log(`[HTTPS Server] Listening on port ${httpsPort}`);
-            console.log(`[HTTPS Server] Automatic SSL certificates via Let's Encrypt`);
-            console.log(`[HTTPS Server] Protocol-relative URLs (//domain/) work on HTTPS sites`);
-            console.log(`\n[Payload Server] Ready! Both HTTP and HTTPS are serving payloads`);
-            
-            // Note about first-time certificate generation
-            const liveDir = path.join(configDir, 'live', process.env.HOSTNAME);
-            if (!fs.existsSync(liveDir)) {
-                console.log(`\n[First Run] Visit https://${process.env.HOSTNAME} to trigger certificate generation`);
-                console.log(`[First Run] ACME challenges will be handled via HTTP on port ${httpPort}`);
-            }
-            resolve();
-        });
-    });
-
-    return { httpServer, httpsServer };
+    return { 
+        httpServer, 
+        httpsServer: servers  // Greenlock is managing HTTPS
+    };
 }
 
 module.exports = {
