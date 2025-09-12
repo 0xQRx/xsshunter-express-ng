@@ -38,19 +38,9 @@
                       class="m-0 btn-fill hide-mobile-text"
                       simple
                       type="primary"
-                      @click="expandReport(report.id)"
-                      v-if="!isReportExpanded(report.id)"
+                      @click="openReportModal(report)"
                     >
-                      <i class="fas fa-angle-double-down"></i> <span>Expand Report</span>
-                    </BaseButton>
-                    <BaseButton
-                      class="m-0 btn-fill hide-mobile-text"
-                      simple
-                      type="primary"
-                      @click="collapseReport(report.id)"
-                      v-if="isReportExpanded(report.id)"
-                    >
-                      <i class="fas fa-angle-double-up"></i> <span>Collapse Report</span>
+                      <i class="fas fa-search"></i> <span>View Details</span>
                     </BaseButton>
                     <BaseButton
                       class="ml-2 w-25 delete-button"
@@ -61,274 +51,6 @@
                       <i class="fas fa-trash-alt"></i>
                     </BaseButton>
                   </div>
-                </Card>
-                
-                <!-- Expanded report -->
-                <Card v-if="isReportExpanded(report.id)">
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">URL</p>
-                      <small class="form-text text-muted report-section-description">
-                        The URL of the page the payload fired on.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.url">{{ report.url }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">IP Address</p>
-                      <small class="form-text text-muted report-section-description">
-                        Remote IP address of the victim.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.ip_address">{{ report.ip_address }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Referer</p>
-                      <small class="form-text text-muted report-section-description">
-                        Referring page for the vulnerable page.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.referer">{{ report.referer }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">User-Agent</p>
-                      <small class="form-text text-muted report-section-description">
-                        Web browser of the victim.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.user_agent">{{ report.user_agent }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Cookies</p>
-                      <small class="form-text text-muted report-section-description">
-                        Non-HTTPOnly cookies of the victim.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.cookies">{{ report.cookies }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <!-- Local Storage and Session Storage -->
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Local Storage</p>
-                      <small class="form-text text-muted report-section-description">
-                        Captured local storage data from the victim's browser.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <ul v-if="report.local_storage && report.local_storage.length">
-                        <li v-for="(item, index) in report.local_storage" :key="index">
-                          <span class="storage-key">{{ item.key }}:</span> 
-                          <code>{{ item.value }}</code>
-                        </li>
-                      </ul>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Session Storage</p>
-                      <small class="form-text text-muted report-section-description">
-                        Captured session storage data from the victim's browser.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <ul v-if="report.session_storage && report.session_storage.length">
-                        <li v-for="(item, index) in report.session_storage" :key="index">
-                          <span class="storage-key">{{ item.key }}:</span>
-                          <code>{{ item.value }}</code>
-                        </li>
-                      </ul>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <!-- Custom Scripts Data -->
-                  <div v-if="report.custom_data && report.custom_data !== '[]'">
-                    <div>
-                      <p class="report-section-label mr-2">Custom Scripts Data</p>
-                      <small class="form-text text-muted report-section-description">
-                        Data collected by custom payload scripts using addCustomData().
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <div v-for="(dataItem, index) in parseCustomData(report.custom_data)" :key="index" class="mb-3">
-                        <h5 class="text-primary">{{ dataItem.title }}</h5>
-                        <CodeEditor
-                          :model-value="formatCustomDataObject(dataItem.data)"
-                          :readonly="true"
-                          class="xss-report-codemirror"
-                        />
-                        <small class="text-muted">
-                          Collected at: {{ new Date(dataItem.timestamp).toLocaleString() }}
-                        </small>
-                      </div>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Title</p>
-                      <small class="form-text text-muted report-section-description">
-                        Vulnerable page's title.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.title">{{ report.title }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">DOM/HTML</p>
-                      <small class="form-text text-muted report-section-description">
-                        Rendered DOM of the vulnerable page.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <CodeEditor
-                        v-if="report.dom && report.dom.length < 10000"
-                        :model-value="report.dom"
-                        :readonly="true"
-                        class="xss-report-codemirror"
-                      />
-                      <h4 v-else>
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Page HTML too large to display inline, please use one of the options below.
-                      </h4>
-                      <div class="button-group-responsive">
-                        <BaseButton
-                          simple
-                          type="primary"
-                          class="mt-3 ml-1 mr-1 hide-mobile-text"
-                          @click="viewHtmlInNewTab(report.dom)"
-                        >
-                          <i class="fas fa-external-link-alt"></i> <span>View Raw HTML in New Tab</span>
-                        </BaseButton>
-                        <BaseButton
-                          simple
-                          type="primary"
-                          class="mt-3 ml-1 mr-1 hide-mobile-text"
-                          @click="downloadHtml(report.dom)"
-                        >
-                          <i class="fas fa-download"></i> <span>Download Raw HTML</span>
-                        </BaseButton>
-                      </div>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Text</p>
-                      <small class="form-text text-muted report-section-description">
-                        Text of the vulnerable page.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <CodeEditor
-                        v-if="report.text"
-                        :model-value="report.text"
-                        :readonly="true"
-                        class="xss-report-codemirror"
-                      />
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Origin</p>
-                      <small class="form-text text-muted report-section-description">
-                        HTTP origin of the vulnerable page.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.origin">{{ report.origin }}</code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Browser Time</p>
-                      <small class="form-text text-muted report-section-description">
-                        Reported time according to the victim's browser.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <code v-if="report.browser_timestamp">
-                        {{ formatDate(parseInt(report.browser_timestamp)) }}
-                        (<i>{{ report.browser_timestamp }}</i>)
-                      </code>
-                      <pre v-else><i>None</i></pre>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <div>
-                    <div>
-                      <p class="report-section-label mr-2">Other</p>
-                      <small class="form-text text-muted report-section-description">
-                        Other miscellaneous information.
-                      </small>
-                    </div>
-                    <div class="m-2 mt-4">
-                      <p>Fired in iFrame?: <code>{{ report.was_iframe }}</code></p>
-                      <p>
-                        Vulnerability enumerated 
-                        <code>{{ formatDate(report.createdAt) }}</code>
-                      </p>
-                      <p>Report ID: <code>{{ report.id }}</code></p>
-                    </div>
-                    <hr />
-                  </div>
-                  
-                  <BaseButton
-                    simple
-                    block
-                    type="primary"
-                    class="mt-4 hide-mobile-text"
-                    @click="collapseReport(report.id)"
-                  >
-                    <i class="fas fa-angle-double-up"></i> <span>Collapse Report</span>
-                  </BaseButton>
                 </Card>
                 <hr />
               </div>
@@ -356,6 +78,255 @@
         ></div>
       </div>
     </div>
+    
+    <!-- Report Details Modal -->
+    <Modal
+      v-model="showReportModal"
+      :show-close="true"
+      modal-classes="modal-xl modal-black"
+      :centered="true"
+      @close="closeReportModal"
+    >
+      <template #header>
+        <h4 class="modal-title" v-if="selectedReport">
+          <i class="fas fa-fire"></i> XSS Report Details
+        </h4>
+        <p class="mb-0" style="font-size: 14px;">
+          <code style="color: #5dade2;">{{ selectedReport?.url }}</code>
+        </p>
+      </template>
+      
+      <div v-if="selectedReport" class="report-modal-content">
+        <!-- Screenshot -->
+        <div class="report-section">
+          <p class="report-section-label">Screenshot</p>
+          <small class="text-muted">Screenshot of the vulnerable page.</small>
+          <div class="mt-2 screenshot-image-container">
+            <a
+              :href="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
+              target="_blank"
+            >
+              <img
+                class="report-image"
+                :src="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
+                alt="XSS Screenshot"
+                style="width: 100%; height: auto;"
+              />
+            </a>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- URL -->
+        <div class="report-section">
+          <p class="report-section-label">URL</p>
+          <small class="text-muted">The URL of the page the payload fired on.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.url || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- IP Address -->
+        <div class="report-section">
+          <p class="report-section-label">IP Address</p>
+          <small class="text-muted">Remote IP address of the victim.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.ip_address || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Referer -->
+        <div class="report-section">
+          <p class="report-section-label">Referer</p>
+          <small class="text-muted">Referring page for the vulnerable page.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.referer || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- User Agent -->
+        <div class="report-section">
+          <p class="report-section-label">User-Agent</p>
+          <small class="text-muted">Web browser of the victim.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.user_agent || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Cookies -->
+        <div class="report-section">
+          <p class="report-section-label">Cookies</p>
+          <small class="text-muted">Non-HTTPOnly cookies of the victim.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.cookies || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Local Storage -->
+        <div class="report-section">
+          <p class="report-section-label">Local Storage</p>
+          <small class="text-muted">Captured local storage data from the victim's browser.</small>
+          <div class="mt-2">
+            <ul v-if="selectedReport.local_storage && selectedReport.local_storage.length">
+              <li v-for="(item, index) in selectedReport.local_storage" :key="index">
+                <span class="storage-key">{{ item.key }}:</span>
+                <code>{{ item.value }}</code>
+              </li>
+            </ul>
+            <pre v-else><i>None</i></pre>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Session Storage -->
+        <div class="report-section">
+          <p class="report-section-label">Session Storage</p>
+          <small class="text-muted">Captured session storage data from the victim's browser.</small>
+          <div class="mt-2">
+            <ul v-if="selectedReport.session_storage && selectedReport.session_storage.length">
+              <li v-for="(item, index) in selectedReport.session_storage" :key="index">
+                <span class="storage-key">{{ item.key }}:</span>
+                <code>{{ item.value }}</code>
+              </li>
+            </ul>
+            <pre v-else><i>None</i></pre>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Custom Scripts Data -->
+        <div v-if="selectedReport.custom_data && selectedReport.custom_data !== '[]'" class="report-section">
+          <p class="report-section-label">Custom Scripts Data</p>
+          <small class="text-muted">Data collected by custom payload scripts using addCustomData().</small>
+          <div class="mt-3">
+            <div v-for="(dataItem, index) in parseCustomData(selectedReport.custom_data)" :key="index" class="mb-3">
+              <h5 class="text-primary">{{ dataItem.title }}</h5>
+              <CodeEditor
+                :model-value="formatCustomDataObject(dataItem.data)"
+                :readonly="true"
+                class="xss-report-codemirror"
+              />
+              <small class="text-muted">
+                Collected at: {{ new Date(dataItem.timestamp).toLocaleString() }}
+              </small>
+            </div>
+          </div>
+        </div>
+        <hr v-if="selectedReport.custom_data && selectedReport.custom_data !== '[]'" />
+        
+        <!-- Title -->
+        <div class="report-section">
+          <p class="report-section-label">Title</p>
+          <small class="text-muted">Vulnerable page's title.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.title || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- DOM HTML -->
+        <div class="report-section">
+          <p class="report-section-label">DOM HTML</p>
+          <small class="text-muted">HTML of the vulnerable page.</small>
+          <div class="mt-2">
+            <CodeEditor
+              v-if="selectedReport.dom && selectedReport.dom.length < 10000"
+              :model-value="selectedReport.dom"
+              :readonly="true"
+              language="html"
+              class="xss-report-codemirror"
+            />
+            <div v-else>
+              <h4>
+                <i class="fas fa-exclamation-triangle"></i>
+                Page HTML too large to display inline, please use one of the options below.
+              </h4>
+              <div class="button-group-responsive">
+                <BaseButton
+                  simple
+                  type="primary"
+                  class="mt-3 ml-1 mr-1 hide-mobile-text"
+                  @click="viewHtmlInNewTab(selectedReport.dom)"
+                >
+                  <i class="fas fa-external-link-alt"></i> <span>View Raw HTML in New Tab</span>
+                </BaseButton>
+                <BaseButton
+                  simple
+                  type="primary"
+                  class="mt-3 ml-1 mr-1 hide-mobile-text"
+                  @click="downloadHtml(selectedReport.dom)"
+                >
+                  <i class="fas fa-download"></i> <span>Download Raw HTML</span>
+                </BaseButton>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Text -->
+        <div class="report-section">
+          <p class="report-section-label">Text</p>
+          <small class="text-muted">Text of the vulnerable page.</small>
+          <div class="mt-2">
+            <CodeEditor
+              v-if="selectedReport.text"
+              :model-value="selectedReport.text"
+              :readonly="true"
+              class="xss-report-codemirror"
+            />
+            <pre v-else><i>None</i></pre>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Origin -->
+        <div class="report-section">
+          <p class="report-section-label">Origin</p>
+          <small class="text-muted">Origin of the page.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.origin || 'None' }}</code>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Browser Time -->
+        <div class="report-section">
+          <p class="report-section-label">Browser Timestamp</p>
+          <small class="text-muted">Reported time according to the victim's browser.</small>
+          <div class="mt-2">
+            <code v-if="selectedReport.browser_timestamp">
+              {{ formatDate(parseInt(selectedReport.browser_timestamp)) }}
+              (<i>{{ selectedReport.browser_timestamp }}</i>)
+            </code>
+            <pre v-else><i>None</i></pre>
+          </div>
+        </div>
+        <hr />
+        
+        <!-- Other Info -->
+        <div class="report-section">
+          <p class="report-section-label">Other</p>
+          <small class="text-muted">Other miscellaneous information.</small>
+          <div class="mt-2">
+            <p><span class="info-label">Fired in iFrame?:</span> <code>{{ selectedReport.was_iframe }}</code></p>
+            <p><span class="info-label">Vulnerability enumerated:</span> <code>{{ formatDate(selectedReport.createdAt) }}</code></p>
+            <p><span class="info-label">Report ID:</span> <code>{{ selectedReport.id }}</code></p>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <BaseButton type="secondary" @click="closeReportModal">
+          Close
+        </BaseButton>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -367,6 +338,7 @@ import Card from '@/components/Cards/Card.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BasePagination from '@/components/BasePagination.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
+import Modal from '@/components/Modal.vue'
 import * as api from '@/services/api'
 import { setLoadingHandler } from '@/services/api'
 
@@ -377,7 +349,8 @@ const loading = ref(false)
 const baseApiPath = ref('')
 const page = ref(1)
 const limit = 5
-const expandedReportIds = ref<string[]>([])
+const showReportModal = ref(false)
+const selectedReport = ref<any>(null)
 const payloadFireReports = ref<any[]>([])
 const reportCount = ref(0)
 
@@ -415,16 +388,14 @@ const pullPayloadFireReports = async () => {
   reportCount.value = reports.result.total
 }
 
-const expandReport = (reportId: string) => {
-  expandedReportIds.value.push(reportId)
+const openReportModal = (report: any) => {
+  selectedReport.value = report
+  showReportModal.value = true
 }
 
-const collapseReport = (reportId: string) => {
-  expandedReportIds.value = expandedReportIds.value.filter(id => id !== reportId)
-}
-
-const isReportExpanded = (reportId: string) => {
-  return expandedReportIds.value.includes(reportId)
+const closeReportModal = () => {
+  showReportModal.value = false
+  selectedReport.value = null
 }
 
 const viewHtmlInNewTab = (inputHtml: string) => {
@@ -597,6 +568,144 @@ hr {
   font-size: .75rem;
   background-color: #1b0036;
   border-radius: .25rem;
+}
+
+// Modal styles
+.modal-black {
+  .modal-content {
+    background: linear-gradient(to bottom, #1e1e2e 0%, #27293d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    
+    .modal-title {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .close {
+      color: rgba(255, 255, 255, 0.8);
+      opacity: 1;
+      font-size: 1.5rem;
+      
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+  
+  .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+  }
+}
+
+.report-modal-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  
+  .report-section {
+    margin-bottom: 1.5rem;
+    
+    .report-section-label {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .text-muted {
+      font-size: 14px;
+      font-style: italic;
+      display: block;
+      margin-bottom: 0.75rem;
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    code {
+      word-break: break-all;
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: #f4bf75;
+    }
+    
+    pre {
+      word-break: break-all;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+      
+      i {
+        color: rgba(255, 255, 255, 0.4);
+        font-style: italic;
+      }
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 0.5rem;
+      
+      li {
+        padding: 0.5rem 0;
+        margin-bottom: 0.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        code {
+          background: none;
+          padding: 0;
+        }
+      }
+    }
+    
+    .info-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+    }
+  }
+  
+  .xss-report-codemirror {
+    margin-top: 0.5rem;
+    
+    .cm-editor {
+      max-height: 300px !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+  
+  .storage-key {
+    font-weight: 600;
+    color: #5dade2;
+    margin-right: 0.5rem;
+  }
+  
+  .screenshot-image-container {
+    background-color: #FFFFFF;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    
+    img {
+      border-radius: 0.25rem;
+    }
+  }
+  
+  hr {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 1.5rem 0;
+  }
 }
 
 // Mobile responsiveness - additional styles specific to this view
