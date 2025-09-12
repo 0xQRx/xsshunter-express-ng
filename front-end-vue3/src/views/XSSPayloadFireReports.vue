@@ -15,17 +15,26 @@
                   <p class="text-right text-muted mb-1" style="font-size: 0.9em;">
                     <i>UUID: {{ report.id }}</i>
                   </p>
-                  <div class="screenshot-image-container mb-2">
-                    <a
-                      :href="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
-                      target="_blank"
-                    >
-                      <img
-                        class="card-img-top report-image"
-                        :src="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
-                        alt="XSS Screenshot"
-                      />
-                    </a>
+                  <div class="mb-2">
+                    <div v-if="!imageErrors[report.screenshot_id]" class="screenshot-image-container">
+                      <a
+                        :href="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
+                        target="_blank"
+                      >
+                        <img
+                          class="card-img-top report-image"
+                          :src="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
+                          alt="XSS Screenshot"
+                          @error="handleImageError(report.screenshot_id)"
+                          @load="handleImageLoad($event, report.screenshot_id)"
+                        />
+                      </a>
+                    </div>
+                    <div v-else class="screenshot-placeholder">
+                      <i class="fas fa-image fa-2x mb-2"></i>
+                      <p>Screenshot not available</p>
+                      <small class="text-muted">Likely a single-page app (React/Vue/Angular)</small>
+                    </div>
                   </div>
                   <h4 class="card-title">
                     <code>{{ report.url }}</code>
@@ -101,18 +110,27 @@
         <div class="report-section">
           <p class="report-section-label">Screenshot</p>
           <small class="text-muted">Screenshot of the vulnerable page.</small>
-          <div class="mt-2 screenshot-image-container">
-            <a
-              :href="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
-              target="_blank"
-            >
-              <img
-                class="report-image"
-                :src="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
-                alt="XSS Screenshot"
-                style="width: 100%; height: auto;"
-              />
-            </a>
+          <div class="mt-2">
+            <div v-if="!imageErrors[selectedReport.screenshot_id]" class="screenshot-image-container">
+              <a
+                :href="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
+                target="_blank"
+              >
+                <img
+                  class="report-image"
+                  :src="`${baseApiPath}/screenshots/${selectedReport.screenshot_id}.png`"
+                  alt="XSS Screenshot"
+                  style="width: 100%; height: auto;"
+                  @error="handleImageError(selectedReport.screenshot_id)"
+                  @load="handleImageLoad($event, selectedReport.screenshot_id)"
+                />
+              </a>
+            </div>
+            <div v-else class="screenshot-placeholder">
+              <i class="fas fa-image fa-3x mb-3"></i>
+              <p class="mb-2">Screenshot capture failed</p>
+              <small class="text-muted">Common with single-page applications that render content dynamically (React, Vue, Angular, etc.)</small>
+            </div>
           </div>
         </div>
         <hr />
@@ -353,6 +371,7 @@ const showReportModal = ref(false)
 const selectedReport = ref<any>(null)
 const payloadFireReports = ref<any[]>([])
 const reportCount = ref(0)
+const imageErrors = ref<Record<string, boolean>>({})
 
 // Set loading handler
 setLoadingHandler((isLoading: boolean) => {
@@ -427,6 +446,21 @@ const formatCustomDataObject = (obj: any) => {
     return JSON.stringify(obj, null, 2)
   } catch (e) {
     return String(obj)
+  }
+}
+
+const handleImageError = (screenshotId: string) => {
+  imageErrors.value[screenshotId] = true
+}
+
+const handleImageLoad = (event: Event, screenshotId: string) => {
+  const img = event.target as HTMLImageElement
+  // Check if image actually loaded with content (not a 1x1 pixel or very small)
+  if (img.naturalWidth <= 1 || img.naturalHeight <= 1) {
+    imageErrors.value[screenshotId] = true
+  } else {
+    // Image loaded successfully
+    delete imageErrors.value[screenshotId]
   }
 }
 
@@ -511,6 +545,22 @@ onMounted(async () => {
 
 .screenshot-image-container {
   background-color: #FFFFFF;
+}
+
+.screenshot-placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem 1rem;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  
+  i {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
 }
 
 .report-image {
@@ -699,6 +749,23 @@ hr {
     
     img {
       border-radius: 0.25rem;
+    }
+  }
+  
+  .screenshot-placeholder {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    
+    i {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    p {
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
     }
   }
   
