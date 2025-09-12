@@ -223,24 +223,88 @@
         <hr />
         
         <!-- Custom Scripts Data -->
-        <div v-if="selectedReport.custom_data && selectedReport.custom_data !== '[]'" class="report-section">
-          <p class="report-section-label">Custom Scripts Data</p>
+        <div v-if="parsedCustomData.length > 0" class="report-section custom-data-section">
+          <p class="report-section-label">
+            Custom Scripts Data 
+            <span v-if="parsedCustomData.length > customDataPerPage" class="text-muted" style="font-size: 14px;">
+              ({{ parsedCustomData.length }} total items)
+            </span>
+          </p>
           <small class="text-muted">Data collected by custom payload scripts using addCustomData().</small>
+          
+          <!-- Pagination controls at top if needed -->
+          <div v-if="showCustomDataPagination" class="custom-data-pagination mt-2 mb-3">
+            <div class="pagination-info">
+              Showing items {{ (customDataPage - 1) * customDataPerPage + 1 }} - 
+              {{ Math.min(customDataPage * customDataPerPage, parsedCustomData.length) }}
+            </div>
+            <div class="pagination-controls">
+              <BaseButton
+                size="sm"
+                type="secondary"
+                :disabled="customDataPage === 1"
+                @click="handleCustomDataPageChange(customDataPage - 1)"
+                class="pagination-btn"
+              >
+                <i class="fas fa-chevron-left"></i> <span class="btn-text">Previous</span>
+              </BaseButton>
+              <span class="page-indicator">
+                Page {{ customDataPage }} of {{ customDataTotalPages }}
+              </span>
+              <BaseButton
+                size="sm"
+                type="secondary"
+                :disabled="customDataPage === customDataTotalPages"
+                @click="handleCustomDataPageChange(customDataPage + 1)"
+                class="pagination-btn"
+              >
+                <span class="btn-text">Next</span> <i class="fas fa-chevron-right"></i>
+              </BaseButton>
+            </div>
+          </div>
+          
           <div class="mt-3">
-            <div v-for="(dataItem, index) in parseCustomData(selectedReport.custom_data)" :key="index" class="mb-3">
+            <div v-for="(dataItem, index) in paginatedCustomData" :key="`${customDataPage}-${index}`" class="mb-3">
               <h5 class="text-primary">{{ dataItem.title }}</h5>
               <CodeEditor
                 :model-value="formatCustomDataObject(dataItem.data)"
                 :readonly="true"
-                class="xss-report-codemirror"
+                class="xss-report-codemirror custom-data-editor"
               />
               <small class="text-muted">
                 Collected at: {{ new Date(dataItem.timestamp).toLocaleString() }}
               </small>
             </div>
           </div>
+          
+          <!-- Pagination controls at bottom if needed -->
+          <div v-if="showCustomDataPagination && parsedCustomData.length > 6" class="custom-data-pagination mt-3">
+            <div class="pagination-controls">
+              <BaseButton
+                size="sm"
+                type="secondary"
+                :disabled="customDataPage === 1"
+                @click="handleCustomDataPageChange(customDataPage - 1)"
+                class="pagination-btn"
+              >
+                <i class="fas fa-chevron-left"></i> <span class="btn-text">Previous</span>
+              </BaseButton>
+              <span class="page-indicator">
+                Page {{ customDataPage }} of {{ customDataTotalPages }}
+              </span>
+              <BaseButton
+                size="sm"
+                type="secondary"
+                :disabled="customDataPage === customDataTotalPages"
+                @click="handleCustomDataPageChange(customDataPage + 1)"
+                class="pagination-btn"
+              >
+                <span class="btn-text">Next</span> <i class="fas fa-chevron-right"></i>
+              </BaseButton>
+            </div>
+          </div>
         </div>
-        <hr v-if="selectedReport.custom_data && selectedReport.custom_data !== '[]'" />
+        <hr v-if="parsedCustomData.length > 0" />
         
         <!-- Title -->
         <div class="report-section">
@@ -377,6 +441,8 @@ const selectedReport = ref<any>(null)
 const payloadFireReports = ref<any[]>([])
 const reportCount = ref(0)
 const imageErrors = ref<Record<string, boolean>>({})
+const customDataPage = ref(1)
+const customDataPerPage = 3
 
 // Set loading handler
 setLoadingHandler((isLoading: boolean) => {
@@ -386,6 +452,31 @@ setLoadingHandler((isLoading: boolean) => {
 // Computed
 const totalPages = computed(() => {
   return Math.ceil(reportCount.value / limit)
+})
+
+const parsedCustomData = computed(() => {
+  if (!selectedReport.value?.custom_data || selectedReport.value.custom_data === '[]') {
+    return []
+  }
+  return parseCustomData(selectedReport.value.custom_data)
+})
+
+const paginatedCustomData = computed(() => {
+  const allData = parsedCustomData.value
+  if (allData.length <= customDataPerPage) {
+    return allData
+  }
+  const start = (customDataPage.value - 1) * customDataPerPage
+  const end = start + customDataPerPage
+  return allData.slice(start, end)
+})
+
+const customDataTotalPages = computed(() => {
+  return Math.ceil(parsedCustomData.value.length / customDataPerPage)
+})
+
+const showCustomDataPagination = computed(() => {
+  return parsedCustomData.value.length > customDataPerPage
 })
 
 // Methods
@@ -415,11 +506,13 @@ const pullPayloadFireReports = async () => {
 const openReportModal = (report: any) => {
   selectedReport.value = report
   showReportModal.value = true
+  customDataPage.value = 1  // Reset custom data pagination
 }
 
 const closeReportModal = () => {
   showReportModal.value = false
   selectedReport.value = null
+  customDataPage.value = 1  // Reset custom data pagination
 }
 
 const viewHtmlInNewTab = (inputHtml: string) => {
@@ -473,6 +566,23 @@ const truncateUrl = (url: string, maxLength: number = 50) => {
   if (!url) return 'No URL'
   if (url.length <= maxLength) return url
   return url.substring(0, maxLength) + '...'
+}
+
+const handleCustomDataPageChange = (newPage: number) => {
+  customDataPage.value = newPage
+  // Scroll to the top of the custom data section
+  setTimeout(() => {
+    const customDataSection = document.querySelector('.modal-body .custom-data-section')
+    if (customDataSection) {
+      customDataSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      // Fallback: scroll modal to top
+      const modalBody = document.querySelector('.modal-body')
+      if (modalBody) {
+        modalBody.scrollTop = modalBody.scrollTop - 400 // Scroll up by approximate custom data height
+      }
+    }
+  }, 50)
 }
 
 // Watch
@@ -744,6 +854,13 @@ hr {
       max-height: 300px !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
+    
+    // Custom data sections have smaller height
+    &.custom-data-editor {
+      .cm-editor {
+        max-height: 250px !important;
+      }
+    }
   }
   
   .storage-key {
@@ -783,6 +900,102 @@ hr {
   hr {
     border-color: rgba(255, 255, 255, 0.1);
     margin: 1.5rem 0;
+  }
+  
+  .custom-data-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    
+    @media (max-width: $mobile) {
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1rem 0.75rem;
+    }
+    
+    .pagination-info {
+      color: $opacity-6;
+      font-size: 0.875rem;
+      
+      @media (max-width: $mobile) {
+        font-size: 0.8rem;
+        text-align: center;
+      }
+    }
+    
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      
+      @media (max-width: $mobile) {
+        width: 100%;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      
+      .page-indicator {
+        color: $opacity-8;
+        font-size: 0.875rem;
+        padding: 0 0.5rem;
+        white-space: nowrap;
+        
+        @media (max-width: $mobile) {
+          font-size: 0.8rem;
+          padding: 0 0.25rem;
+        }
+        
+        @media (max-width: 380px) {
+          font-size: 0.75rem;
+          padding: 0 0.125rem;
+        }
+      }
+      
+      .pagination-btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        min-width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        
+        &:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+        
+        i {
+          font-size: 0.875rem;
+        }
+        
+        @media (max-width: $mobile) {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.8rem;
+          
+          // Make touch targets bigger on mobile
+          min-height: 44px; // iOS recommended touch target size
+          
+          // Show only icons on very small screens
+          @media (max-width: 380px) {
+            padding: 0.5rem;
+            
+            .btn-text {
+              display: none;
+            }
+            
+            i {
+              font-size: 1.1rem;
+              margin: 0 !important;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
