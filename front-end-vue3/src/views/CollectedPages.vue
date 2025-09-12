@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-12">
         <Card class="xss-card-container">
-          <div class="row pl-4 pr-4 p-2" style="display: block;">
+          <div class="card-content-wrapper">
             <div>
               <h1>
                 <i class="fas fa-file"></i> Collected Pages
@@ -30,30 +30,32 @@
                         <i class="fas fa-exclamation-triangle"></i>
                         Page HTML too large to display inline, please use one of the options below.
                       </h4>
-                      <BaseButton
-                        simple
-                        type="primary"
-                        class="mt-3 ml-1 mr-1"
-                        @click="viewHtmlInNewTab(collectedPage.html)"
-                      >
-                        <i class="fas fa-external-link-alt"></i> View Raw HTML in New Tab
-                      </BaseButton>
-                      <BaseButton
-                        simple
-                        type="primary"
-                        class="mt-3 ml-1 mr-1"
-                        @click="downloadHtml(collectedPage.html)"
-                      >
-                        <i class="fas fa-download"></i> Download Raw HTML
-                      </BaseButton>
-                      <BaseButton
-                        simple
-                        type="danger"
-                        class="mt-3 ml-1 mr-1"
-                        @click="deleteCollectedPage(collectedPage.id)"
-                      >
-                        <i class="fas fa-trash-alt"></i> Delete Page
-                      </BaseButton>
+                      <div class="button-group-responsive">
+                        <BaseButton
+                          simple
+                          type="primary"
+                          class="mt-3 ml-1 mr-1 hide-mobile-text"
+                          @click="viewHtmlInNewTab(collectedPage.html)"
+                        >
+                          <i class="fas fa-external-link-alt"></i> <span>View Raw HTML in New Tab</span>
+                        </BaseButton>
+                        <BaseButton
+                          simple
+                          type="primary"
+                          class="mt-3 ml-1 mr-1 hide-mobile-text"
+                          @click="downloadHtml(collectedPage.html)"
+                        >
+                          <i class="fas fa-download"></i> <span>Download Raw HTML</span>
+                        </BaseButton>
+                        <BaseButton
+                          simple
+                          type="danger"
+                          class="mt-3 ml-1 mr-1 hide-mobile-text"
+                          @click="deleteCollectedPage(collectedPage.id)"
+                        >
+                          <i class="fas fa-trash-alt"></i> <span>Delete Page</span>
+                        </BaseButton>
+                      </div>
                     </div>
                     <hr />
                   </div>
@@ -178,6 +180,8 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/sass/mobile-responsive';
+
 .xss-card-container {
   max-width: 1000px;
   width: 100%;
@@ -238,5 +242,18 @@ hr {
   font-size: .75rem;
   background-color: #1b0036;
   border-radius: .25rem;
+}
+
+// Mobile responsiveness - additional styles specific to this view
+@media (max-width: $tablet) {
+  .report-section-label {
+    font-size: 14px;
+    
+    code {
+      word-break: break-all;
+      display: block;
+      margin-top: 0.5rem;
+    }
+  }
 }
 </style>

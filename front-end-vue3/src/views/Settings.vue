@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-12">
         <Card class="xss-card-container">
-          <div class="row pl-4 pr-4 p-2" style="display: block;">
+          <div class="card-content-wrapper">
             <div>
               <h1><i class="fas fa-cogs"></i> Settings</h1>
             </div>
@@ -15,12 +15,14 @@
               <p class="card-text">
                 <BaseInput v-model="correlation_api_key" type="text" placeholder="..." readonly></BaseInput>
               </p>
-              <BaseButton class="mr-1" type="info" @click="copyApiKey">
-                <i class="far fa-copy"></i> Copy API Key
-              </BaseButton>
-              <BaseButton type="danger" @click="generate_new_correlation_api_key">
-                <i class="fas fa-sync-alt"></i> Rotate API Key
-              </BaseButton>
+              <div class="button-group-responsive">
+                <BaseButton class="mr-1 hide-mobile-text" type="info" @click="copyApiKey">
+                  <i class="far fa-copy"></i> <span>Copy API Key</span>
+                </BaseButton>
+                <BaseButton class="hide-mobile-text" type="danger" @click="generate_new_correlation_api_key">
+                  <i class="fas fa-sync-alt"></i> <span>Rotate API Key</span>
+                </BaseButton>
+              </div>
             </Card>
             
             <!-- Master Password -->
@@ -30,8 +32,8 @@
               <p class="card-text">
                 <BaseInput v-model="password" type="password" placeholder="*******************"></BaseInput>
               </p>
-              <BaseButton type="success" @click="update_password">
-                <i class="fas fa-lock"></i> Update Password
+              <BaseButton type="success" class="hide-mobile-text" @click="update_password">
+                <i class="fas fa-lock"></i> <span>Update Password</span>
               </BaseButton>
             </Card>
             
@@ -42,25 +44,27 @@
               <p class="card-text">
                 <BaseInput v-model="chainload_uri" type="text" placeholder="https://example.com/remote.js"></BaseInput>
               </p>
-              <BaseButton type="success" @click="update_chainload_uri">
-                <i class="far fa-save"></i> Save JavaScript URL
-              </BaseButton>
-              <BaseButton type="danger" @click="clear_chainload_uri" class="ml-2">
-                <i class="fas fa-trash-alt"></i> Clear JavaScript URL
-              </BaseButton>
+              <div class="button-group-responsive">
+                <BaseButton type="success" class="hide-mobile-text" @click="update_chainload_uri">
+                  <i class="far fa-save"></i> <span>Save JavaScript URL</span>
+                </BaseButton>
+                <BaseButton type="danger" @click="clear_chainload_uri" class="ml-2 hide-mobile-text">
+                  <i class="fas fa-trash-alt"></i> <span>Clear JavaScript URL</span>
+                </BaseButton>
+              </div>
             </Card>
             
             <!-- Pages to Collect on Payload Fire -->
             <Card>
               <h4 class="card-title">Pages to Collect on Payload Fire</h4>
               <h6 class="card-subtitle mb-2 text-muted">List of relative paths to collect from a site when a payload fires.</h6>
-              <div class="form-row">
+              <div class="form-row mobile-stack">
                 <div class="col">
                   <BaseInput class="mt-1" type="text" placeholder="/robots.txt" v-model="new_page_to_collect" />
                 </div>
                 <div class="col">
-                  <BaseButton type="success" @click="add_new_page_to_collect">
-                    <i class="fas fa-plus"></i> Add New Path to Collect
+                  <BaseButton type="success" class="hide-mobile-text w-100-mobile" @click="add_new_page_to_collect">
+                    <i class="fas fa-plus"></i> <span>Add New Path to Collect</span>
                   </BaseButton>
                 </div>
               </div>
@@ -71,12 +75,12 @@
                   </option>
                 </select>
               </p>
-              <BaseButton type="danger" class="btn-sm mt-0 mb-3" @click="delete_selected_pages_to_collect">
-                <i class="fas fa-trash-alt"></i> Delete Selected Path(s)
+              <BaseButton type="danger" class="btn-sm mt-0 mb-3 hide-mobile-text" @click="delete_selected_pages_to_collect">
+                <i class="fas fa-trash-alt"></i> <span>Delete Selected Path(s)</span>
               </BaseButton>
               <br />
-              <BaseButton type="success" @click="update_pages_to_collect">
-                <i class="far fa-save"></i> Update Pages to Collect List
+              <BaseButton type="success" class="hide-mobile-text" @click="update_pages_to_collect">
+                <i class="far fa-save"></i> <span>Update Pages to Collect List</span>
               </BaseButton>
             </Card>
             
@@ -85,8 +89,8 @@
               <h4 class="card-title">Miscellaneous Options</h4>
               
               <!-- Revoke Sessions -->
-              <BaseButton type="danger" @click="revoke_all_sessions">
-                <i class="fas fa-user-times"></i> Revoke All Active Sessions
+              <BaseButton type="danger" class="hide-mobile-text" @click="revoke_all_sessions">
+                <i class="fas fa-user-times"></i> <span>Revoke All Active Sessions</span>
               </BaseButton>
               <h6 class="mt-2 text-muted">Invalidates all active login sessions. This will log you out as well.</h6>
               <hr />
@@ -95,10 +99,11 @@
               <div v-if="send_alert_emails">
                 <BaseButton 
                   type="warning" 
+                  class="hide-mobile-text"
                   @click="set_email_reporting"
                   :disabled="!email_configured"
                   :title="!email_configured ? 'SMTP email is not configured. Set SMTP_EMAIL_NOTIFICATIONS_ENABLED=true and configure SMTP settings.' : ''">
-                  <i class="far fa-bell-slash"></i> Disable Email Reporting
+                  <i class="far fa-bell-slash"></i> <span>Disable Email Reporting</span>
                 </BaseButton>
                 <h6 class="mt-2 text-muted">
                   <span v-if="!email_configured" class="text-warning">⚠️ SMTP not configured - </span>
@@ -108,10 +113,11 @@
               <div v-else>
                 <BaseButton 
                   type="success" 
+                  class="hide-mobile-text"
                   @click="set_email_reporting"
                   :disabled="!email_configured"
                   :title="!email_configured ? 'SMTP email is not configured. Set SMTP_EMAIL_NOTIFICATIONS_ENABLED=true and configure SMTP settings.' : ''">
-                  <i class="far fa-bell"></i> Enable Email Reporting
+                  <i class="far fa-bell"></i> <span>Enable Email Reporting</span>
                 </BaseButton>
                 <h6 class="mt-2 text-muted">
                   <span v-if="!email_configured" class="text-warning">⚠️ SMTP not configured - </span>
@@ -125,10 +131,11 @@
               <div v-if="send_discord_alerts">
                 <BaseButton 
                   type="warning" 
+                  class="hide-mobile-text"
                   @click="set_discord_reporting"
                   :disabled="!discord_configured"
                   :title="!discord_configured ? 'Discord webhook is not configured. Set DISCORD_WEBHOOK_URL environment variable.' : ''">
-                  <i class="fab fa-discord"></i> Disable Discord Reporting
+                  <i class="fab fa-discord"></i> <span>Disable Discord Reporting</span>
                 </BaseButton>
                 <h6 class="mt-2 text-muted">
                   <span v-if="!discord_configured" class="text-warning">⚠️ Discord webhook not configured - </span>
@@ -138,10 +145,11 @@
               <div v-else>
                 <BaseButton 
                   type="success" 
+                  class="hide-mobile-text"
                   @click="set_discord_reporting"
                   :disabled="!discord_configured"
                   :title="!discord_configured ? 'Discord webhook is not configured. Set DISCORD_WEBHOOK_URL environment variable.' : ''">
-                  <i class="fab fa-discord"></i> Enable Discord Reporting
+                  <i class="fab fa-discord"></i> <span>Enable Discord Reporting</span>
                 </BaseButton>
                 <h6 class="mt-2 text-muted">
                   <span v-if="!discord_configured" class="text-warning">⚠️ Discord webhook not configured - </span>
@@ -297,6 +305,8 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/sass/mobile-responsive';
+
 .xss-card-container {
   max-width: 1200px;
   width: 100%;
@@ -349,5 +359,36 @@ onMounted(async () => {
 .form-row > .col {
   padding-right: 5px;
   padding-left: 5px;
+}
+
+// Mobile responsiveness
+// Mobile responsiveness - additional styles specific to this view
+.mobile-stack {
+  @media (max-width: $mobile) {
+    flex-direction: column;
+    
+    .col {
+      width: 100%;
+      max-width: 100%;
+      flex: none;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+.w-100-mobile {
+  @media (max-width: $mobile) {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: $tablet) {
+  .card-title {
+    font-size: 1.2rem;
+  }
+  
+  .card-subtitle {
+    font-size: 0.9rem;
+  }
 }
 </style>

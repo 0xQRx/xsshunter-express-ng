@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-12">
         <Card class="xss-card-container">
-          <div class="row pl-4 pr-4 p-2" style="display: block;">
+          <div class="card-content-wrapper">
             <div>
               <h1><i class="fas fa-file-code"></i> XSS Payloads</h1>
             </div>
@@ -14,8 +14,8 @@
               <p class="card-text">
                 <BaseInput type="text" :value="payload.func()" placeholder="..." readonly />
               </p>
-              <BaseButton type="primary" @click="copyPayload(payload.func())">
-                <i class="far fa-copy"></i> Copy Payload
+              <BaseButton type="primary" class="hide-mobile-text" @click="copyPayload(payload.func())">
+                <i class="far fa-copy"></i> <span>Copy Payload</span>
               </BaseButton>
             </Card>
           </div>
@@ -138,6 +138,8 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/sass/mobile-responsive';
+
 .xss-card-container {
   max-width: 1000px;
   width: 100%;
@@ -146,5 +148,23 @@ onMounted(() => {
 .control-label {
   color: #d3d3d7 !important;
   display: inline;
+}
+
+// Mobile responsiveness
+// Mobile responsiveness - additional styles specific to this view
+@media (max-width: $tablet) {
+  .card-title {
+    font-size: 1.1rem;
+    word-break: break-word;
+  }
+  
+  .card-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .form-control[readonly] {
+    font-size: 0.85rem;
+    word-break: break-all;
+  }
 }
 </style>

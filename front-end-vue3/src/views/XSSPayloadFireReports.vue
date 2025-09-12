@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-12">
         <Card class="xss-card-container">
-          <div class="row pl-4 pr-4 p-2" style="display: block;">
+          <div class="card-content-wrapper">
             <div>
               <h1>
                 <i class="fas fa-fire"></i> XSS Payload Fire Reports
@@ -35,22 +35,22 @@
                   </p>
                   <div class="mt-3 button-full">
                     <BaseButton
-                      class="m-0 btn-fill"
+                      class="m-0 btn-fill hide-mobile-text"
                       simple
                       type="primary"
                       @click="expandReport(report.id)"
                       v-if="!isReportExpanded(report.id)"
                     >
-                      <i class="fas fa-angle-double-down"></i> Expand Report
+                      <i class="fas fa-angle-double-down"></i> <span>Expand Report</span>
                     </BaseButton>
                     <BaseButton
-                      class="m-0 btn-fill"
+                      class="m-0 btn-fill hide-mobile-text"
                       simple
                       type="primary"
                       @click="collapseReport(report.id)"
                       v-if="isReportExpanded(report.id)"
                     >
-                      <i class="fas fa-angle-double-up"></i> Collapse Report
+                      <i class="fas fa-angle-double-up"></i> <span>Collapse Report</span>
                     </BaseButton>
                     <BaseButton
                       class="ml-2 w-25 delete-button"
@@ -230,22 +230,24 @@
                         <i class="fas fa-exclamation-triangle"></i>
                         Page HTML too large to display inline, please use one of the options below.
                       </h4>
-                      <BaseButton
-                        simple
-                        type="primary"
-                        class="mt-3 ml-1 mr-1"
-                        @click="viewHtmlInNewTab(report.dom)"
-                      >
-                        <i class="fas fa-external-link-alt"></i> View Raw HTML in New Tab
-                      </BaseButton>
-                      <BaseButton
-                        simple
-                        type="primary"
-                        class="mt-3 ml-1 mr-1"
-                        @click="downloadHtml(report.dom)"
-                      >
-                        <i class="fas fa-download"></i> Download Raw HTML
-                      </BaseButton>
+                      <div class="button-group-responsive">
+                        <BaseButton
+                          simple
+                          type="primary"
+                          class="mt-3 ml-1 mr-1 hide-mobile-text"
+                          @click="viewHtmlInNewTab(report.dom)"
+                        >
+                          <i class="fas fa-external-link-alt"></i> <span>View Raw HTML in New Tab</span>
+                        </BaseButton>
+                        <BaseButton
+                          simple
+                          type="primary"
+                          class="mt-3 ml-1 mr-1 hide-mobile-text"
+                          @click="downloadHtml(report.dom)"
+                        >
+                          <i class="fas fa-download"></i> <span>Download Raw HTML</span>
+                        </BaseButton>
+                      </div>
                     </div>
                     <hr />
                   </div>
@@ -322,10 +324,10 @@
                     simple
                     block
                     type="primary"
-                    class="mt-4"
+                    class="mt-4 hide-mobile-text"
                     @click="collapseReport(report.id)"
                   >
-                    <i class="fas fa-angle-double-up"></i> Collapse Report
+                    <i class="fas fa-angle-double-up"></i> <span>Collapse Report</span>
                   </BaseButton>
                 </Card>
                 <hr />
@@ -478,6 +480,8 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/sass/mobile-responsive';
+
 // All styles from original component (using theme variables)
 .button-full {
   display: flex;
@@ -593,5 +597,39 @@ hr {
   font-size: .75rem;
   background-color: #1b0036;
   border-radius: .25rem;
+}
+
+// Mobile responsiveness - additional styles specific to this view
+@media (max-width: $tablet) {
+  .report-image {
+    height: 30vh;
+  }
+  
+  .report-section-label {
+    font-size: 16px;
+  }
+  
+  .report-section-description {
+    display: block;
+    float: none;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .button-full {
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .btn-fill, .delete-button {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+    }
+  }
+  
+  code {
+    word-break: break-all;
+    font-size: 0.85rem;
+  }
 }
 </style>
