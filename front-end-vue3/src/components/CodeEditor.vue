@@ -90,6 +90,21 @@ watch(() => props.modelValue, (newValue) => {
   .cm-cursor {
     border-left: 1px solid #f8f8f2 !important;
   }
+  
+  // Force selection visibility as fallback - subtle highlight
+  .cm-selectionBackground {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  .cm-content ::selection {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: inherit !important;
+  }
+  
+  // Ensure selection layer is visible
+  .cm-selectionLayer .cm-selectionBackground {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
 }
 
 // Fixed height for modal editors (PayloadConsole)

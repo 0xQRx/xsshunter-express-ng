@@ -35,8 +35,17 @@ const base16DarkTheme = EditorView.theme({
     caretColor: base16Colors.cursor
   },
   '.cm-cursor, .cm-dropCursor': { borderLeftColor: base16Colors.cursor },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)'
+  '&.cm-focused .cm-selectionBackground, ::selection': {
+    backgroundColor: 'rgba(255, 255, 255, 0.08) !important'  // Subtle when focused
+  },
+  '.cm-selectionBackground': {
+    backgroundColor: 'rgba(255, 255, 255, 0.05) !important'  // Even more subtle when not focused
+  },
+  '.cm-content ::selection': {
+    backgroundColor: 'rgba(255, 255, 255, 0.08) !important'
+  },
+  '&.cm-focused .cm-selectionLayer .cm-selectionBackground': {
+    backgroundColor: 'rgba(255, 255, 255, 0.08) !important'
   },
   '.cm-panels': { backgroundColor: 'transparent', color: base16Colors.foreground },
   '.cm-panels.cm-panels-top': { borderBottom: '2px solid black' },
