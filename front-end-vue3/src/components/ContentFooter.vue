@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <ul class="nav">
         <li class="nav-item">
-          <a href="https://github.com/0xQRx/xsshunter-express" target="_blank" class="nav-link">
+          <a href="https://github.com/0xQRx/xsshunter-express-ng" target="_blank" class="nav-link">
             XSS Hunter Express
           </a>
         </li>

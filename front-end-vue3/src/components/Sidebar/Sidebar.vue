@@ -39,7 +39,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a target="_blank" href="https://github.com/0xQRx/xsshunter-express" class="nav-link">
+          <a target="_blank" href="https://github.com/0xQRx/xsshunter-express-ng" class="nav-link">
             <i class="fab fa-github"></i>
             <p>Github Repo</p>
           </a>
