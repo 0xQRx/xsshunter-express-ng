@@ -1,0 +1,37 @@
+--- a/node_modules/@root/greenlock-express/servers.js
++++ b/node_modules/@root/greenlock-express/servers.js
+@@ -100,11 +100,14 @@
+ 
+             var id = cluster.isWorker && cluster.worker.id;
+             var idstr = (id && "#" + id + " ") || "";
+-            var plainServer = servers.httpServer();
+-            var plainAddr = "0.0.0.0";
+-            var plainPort = 80;
+-            plainServer.listen(plainPort, plainAddr, function() {
+-                console.info(
++            
++            // PATCHED: Skip HTTP server - we handle it ourselves
++            // var plainServer = servers.httpServer();
++            // var plainAddr = "0.0.0.0";
++            // var plainPort = 80;
++            
++            // Skip HTTP server binding, go straight to HTTPS
++            setTimeout(function() {
++                console.info(
+                     idstr + "Listening on",
+-                    plainAddr + ":" + plainPort,
+-                    "for ACME challenges, and redirecting to HTTPS"
++                    "CUSTOM HTTP SERVER",
++                    "for ACME challenges (no redirects)"
+@@ -119,6 +122,6 @@
+                     console.info(idstr + "Listening on", secureAddr + ":" + securePort, "for secure traffic");
+ 
+-                    plainServer.removeListener("error", startError);
++                    // plainServer.removeListener("error", startError);
+                     secureServer.removeListener("error", startError);
+                     resolve();
+                 });
+-            });
++            }, 100);
+         });
+     };

@@ -43,6 +43,16 @@ mkdir -p /app/greenlock.d/live
 
 echo "[SSL] Greenlock directory ready for domain: ${HOSTNAME}"
 
+# Apply Greenlock patch to prevent it from binding to port 80
+echo "[Patch] Applying Greenlock HTTPS-only patch..."
+if [ -f /app/Docker/greenlock-https-only.patch ]; then
+    cd /app/server-ng
+    patch -p0 < /app/Docker/greenlock-https-only.patch
+    echo "[Patch] Greenlock patched to only handle HTTPS (port 443)"
+else
+    echo "[Patch] Warning: Patch file not found, Greenlock will try to bind to port 80"
+fi
+
 echo "[INFO] Starting servers..."
 cd /app/server-ng
 node dual-server.js

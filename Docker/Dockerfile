@@ -1,7 +1,7 @@
 FROM node:22-alpine
 
-# Install bash for entrypoint script
-RUN apk add --no-cache bash
+# Install bash for entrypoint script and patch for Greenlock modification
+RUN apk add --no-cache bash patch
 
 # Set up working directory
 WORKDIR /app
@@ -11,6 +11,7 @@ WORKDIR /app
 COPY front-end-vue3 /app/front-end-vue3
 COPY server-ng /app/server-ng
 COPY Docker/docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY Docker/greenlock-https-only.patch /app/Docker/greenlock-https-only.patch
 
 # Build frontend
 WORKDIR /app/front-end-vue3
