@@ -4,6 +4,7 @@ const get_app_server = require('./app-refactored.js');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
 
 // Check if we're running in development mode
 const isDevelopment = process.env.DEV_MODE === 'true' || process.env.NODE_ENV === 'development';
@@ -30,16 +31,7 @@ async function startWithSSL(httpPort, httpsPort) {
     console.log(`[Dual Protocol] Setting up servers for ${process.env.HOSTNAME}`);
     console.log(`[Dual Protocol] Email: ${process.env.SSL_CONTACT_EMAIL}`);
     
-    // Start our custom HTTP server first - no redirects, serve everything
-    const httpServer = http.createServer(app);
-    
-    httpServer.listen(httpPort, () => {
-        console.log(`[HTTP Server] Listening on port ${httpPort}`);
-        console.log(`[HTTP Server] Serving all paths directly (no HTTPS redirect)`);
-        console.log(`[HTTP Server] Protocol-relative URLs (//domain/) work on HTTP sites`);
-    });
-    
-    // Set up Greenlock for HTTPS only (with our patch, it won't try to bind to port 80)
+    // Set up Greenlock first to get its middleware
     const configDir = '/app/greenlock.d';
     const configPath = path.join(configDir, 'config.json');
     
@@ -80,8 +72,50 @@ async function startWithSSL(httpPort, httpsPort) {
         cluster: false
     });
     
+    // Create our own ACME challenge middleware
+    const acmeApp = express();
+    
+    // Handle ACME challenges
+    acmeApp.use('/.well-known/acme-challenge/', async (req, res, next) => {
+        const token = req.path.slice(1); // Remove leading slash
+        console.log(`[ACME] Challenge request for token: ${token}`);
+        
+        try {
+            // Use Greenlock's internal method to get the challenge response
+            const result = await greenlock.getAcmeHttp01ChallengeResponse({
+                type: 'http-01',
+                servername: req.hostname,
+                token: token
+            });
+            
+            if (result && result.keyAuthorization) {
+                console.log(`[ACME] Responding with challenge for ${req.hostname}`);
+                res.type('text/plain');
+                res.send(result.keyAuthorization);
+            } else {
+                console.log(`[ACME] No challenge found for token ${token}`);
+                res.status(404).send('Challenge not found');
+            }
+        } catch (err) {
+            console.error(`[ACME] Error getting challenge:`, err.message);
+            res.status(404).send('Challenge not found');
+        }
+    });
+    
+    // Fall back to main app for all other requests
+    acmeApp.use(app);
+    
+    // Start HTTP server with our ACME-aware app
+    const httpServer = http.createServer(acmeApp);
+    
+    httpServer.listen(httpPort, () => {
+        console.log(`[HTTP Server] Listening on port ${httpPort}`);
+        console.log(`[HTTP Server] Serving all paths directly (no HTTPS redirect)`);
+        console.log(`[HTTP Server] Handling ACME challenges at /.well-known/acme-challenge/`);
+        console.log(`[HTTP Server] Protocol-relative URLs (//domain/) work on HTTP sites`);
+    });
+    
     // With our patch applied, greenlock.serve() will only bind to port 443
-    // Our HTTP server on port 80 remains independent
     const servers = greenlock.serve(app);
     
     console.log(`[Greenlock] Managing HTTPS on port ${httpsPort} with auto-renewal`);

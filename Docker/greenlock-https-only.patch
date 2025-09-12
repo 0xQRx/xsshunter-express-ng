@@ -1,5 +1,5 @@
---- a/node_modules/@root/greenlock-express/servers.js
-+++ b/node_modules/@root/greenlock-express/servers.js
+--- node_modules/@root/greenlock-express/servers.js.orig
++++ node_modules/@root/greenlock-express/servers.js
 @@ -100,26 +100,19 @@
  
              var id = cluster.isWorker && cluster.worker.id;
