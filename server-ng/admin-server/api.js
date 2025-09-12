@@ -14,17 +14,17 @@ const { errorHandler, notFoundHandler } = require('../shared/middleware/error-ha
 const { applySecurityHeaders, staticAssetHeaders } = require('../shared/middleware/security-headers.js');
 
 // Import middleware
-const { initializeSessionMiddleware } = require('./middleware/session');
-const { csrfProtection, requireAuth } = require('./middleware/auth');
+const { initializeSessionMiddleware } = require('./middleware/session.js');
+const { csrfProtection, requireAuth } = require('./middleware/auth.js');
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const firesRoutes = require('./routes/fires');
-const pagesRoutes = require('./routes/pages');
-const settingsRoutes = require('./routes/settings');
-const payloadsRoutes = require('./routes/payloads');
-const injectionRoutes = require('./routes/injection');
-const screenshotsRoutes = require('./routes/screenshots');
+const authRoutes = require('./routes/auth.js');
+const firesRoutes = require('./routes/fires.js');
+const pagesRoutes = require('./routes/pages.js');
+const settingsRoutes = require('./routes/settings.js');
+const payloadsRoutes = require('./routes/payloads.js');
+const injectionRoutes = require('./routes/injection.js');
+const screenshotsRoutes = require('./routes/screenshots.js');
 
 
 async function set_up_api_server(app) {

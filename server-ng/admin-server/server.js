@@ -28,7 +28,7 @@ async function startWithSSL(port) {
     const app = await get_app_server();
     const https = require('https');
     const fs = require('fs');
-    const { waitForSSLCertificates } = require('./wait-for-ssl');
+    const { waitForSSLCertificates } = require('./utils/wait-for-ssl.js');
     
     // Try to find Greenlock certificates for the hostname
     const hostname = process.env.HOSTNAME;

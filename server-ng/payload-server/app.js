@@ -9,10 +9,10 @@ const multer = require('multer');
 const validate = require('express-jsonschema').validate;
 
 // Import handlers
-const { serveProbe } = require('./handlers/probe');
-const { handleJSCallback } = require('./handlers/callback');
-const { handleBackgroundCallback } = require('./handlers/background');
-const { handlePageCallback } = require('./handlers/page');
+const { serveProbe } = require('./handlers/probe.js');
+const { handleJSCallback } = require('./handlers/callback.js');
+const { handleBackgroundCallback } = require('./handlers/background.js');
+const { handlePageCallback } = require('./handlers/page.js');
 
 // Import database and utilities
 const database = require('../shared/database.js');

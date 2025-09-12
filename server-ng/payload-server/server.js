@@ -1,6 +1,6 @@
 'use strict';
 
-const get_app_server = require('./app-refactored.js');
+const get_app_server = require('./app.js');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');

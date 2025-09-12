@@ -6,7 +6,7 @@ const asyncfs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 const database = require('../shared/database.js');
 const Settings = database.Settings;
-const api = require('./api-refactored.js');
+const api = require('./api.js');
 const constants = require('../shared/constants.js');
 const crypto = require('crypto');
 
