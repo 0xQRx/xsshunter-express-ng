@@ -1,6 +1,6 @@
 --- a/node_modules/@root/greenlock-express/servers.js
 +++ b/node_modules/@root/greenlock-express/servers.js
-@@ -100,11 +100,14 @@
+@@ -100,26 +100,19 @@
  
              var id = cluster.isWorker && cluster.worker.id;
              var idstr = (id && "#" + id + " ") || "";
@@ -9,29 +9,36 @@
 -            var plainPort = 80;
 -            plainServer.listen(plainPort, plainAddr, function() {
 -                console.info(
-+            
-+            // PATCHED: Skip HTTP server - we handle it ourselves
-+            // var plainServer = servers.httpServer();
-+            // var plainAddr = "0.0.0.0";
-+            // var plainPort = 80;
-+            
-+            // Skip HTTP server binding, go straight to HTTPS
-+            setTimeout(function() {
-+                console.info(
-                     idstr + "Listening on",
+-                    idstr + "Listening on",
 -                    plainAddr + ":" + plainPort,
 -                    "for ACME challenges, and redirecting to HTTPS"
-+                    "CUSTOM HTTP SERVER",
-+                    "for ACME challenges (no redirects)"
-@@ -119,6 +122,6 @@
-                     console.info(idstr + "Listening on", secureAddr + ":" + securePort, "for secure traffic");
- 
+-                );
+-
+-                // TODO fetch greenlock.servername
+-                _middlewareApp = app || _middlewareApp;
+-                var secureServer = servers.httpsServer(null, app);
+-                var secureAddr = "0.0.0.0";
+-                var securePort = 443;
+-                secureServer.listen(securePort, secureAddr, function() {
+-                    console.info(idstr + "Listening on", secureAddr + ":" + securePort, "for secure traffic");
+-
 -                    plainServer.removeListener("error", startError);
-+                    // plainServer.removeListener("error", startError);
-                     secureServer.removeListener("error", startError);
-                     resolve();
-                 });
--            });
-+            }, 100);
+-                    secureServer.removeListener("error", startError);
+-                    resolve();
+-                });
++            
++            // PATCHED: Skip HTTP server completely - we handle it ourselves
++            console.info(idstr + "Skipping HTTP server (handled externally)");
++            
++            // TODO fetch greenlock.servername
++            _middlewareApp = app || _middlewareApp;
++            var secureServer = servers.httpsServer(null, app);
++            var secureAddr = "0.0.0.0";
++            var securePort = 443;
++            secureServer.listen(securePort, secureAddr, function() {
++                console.info(idstr + "Listening on", secureAddr + ":" + securePort, "for secure traffic");
++                
++                secureServer.removeListener("error", startError);
++                resolve();
+             });
          });
-     };

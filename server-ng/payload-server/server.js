@@ -31,32 +31,11 @@ async function startWithSSL(httpPort, httpsPort) {
     console.log(`[Dual Protocol] Email: ${process.env.SSL_CONTACT_EMAIL}`);
     
     // Start our custom HTTP server first - no redirects, serve everything
-    // We need to handle ACME challenges for Let's Encrypt
-    const httpServer = http.createServer((req, res) => {
-        // Check if this is an ACME challenge request
-        if (req.url && req.url.startsWith('/.well-known/acme-challenge/')) {
-            // For ACME challenges, we need to serve files from Greenlock's challenge directory
-            const challengePath = path.join('/app/greenlock.d', 'challenges', req.url.replace('/.well-known/acme-challenge/', ''));
-            
-            fs.readFile(challengePath, 'utf8', (err, data) => {
-                if (err) {
-                    // Fallback to the app for ACME challenges (Greenlock might handle it differently)
-                    app(req, res);
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end(data);
-                }
-            });
-        } else {
-            // For all other requests, serve our app
-            app(req, res);
-        }
-    });
+    const httpServer = http.createServer(app);
     
     httpServer.listen(httpPort, () => {
         console.log(`[HTTP Server] Listening on port ${httpPort}`);
         console.log(`[HTTP Server] Serving all paths directly (no HTTPS redirect)`);
-        console.log(`[HTTP Server] ACME challenges supported at /.well-known/acme-challenge/`);
         console.log(`[HTTP Server] Protocol-relative URLs (//domain/) work on HTTP sites`);
     });
     
@@ -92,7 +71,7 @@ async function startWithSSL(httpPort, httpsPort) {
         console.log(`[Greenlock] Configuration created for ${process.env.HOSTNAME}`);
     }
     
-    console.log(`[Greenlock] Initializing (patched to skip port 80)`);
+    console.log(`[Greenlock] Initializing (with patch applied to skip port 80)`);
     
     const greenlock = require('greenlock-express').init({
         packageRoot: '/app/server-ng',
@@ -101,12 +80,11 @@ async function startWithSSL(httpPort, httpsPort) {
         cluster: false
     });
     
-    // With our patch, greenlock.serve() will only bind to port 443
-    // Our HTTP server on port 80 remains untouched
+    // With our patch applied, greenlock.serve() will only bind to port 443
+    // Our HTTP server on port 80 remains independent
     const servers = greenlock.serve(app);
     
     console.log(`[Greenlock] Managing HTTPS on port ${httpsPort} with auto-renewal`);
-    console.log(`[Greenlock] ACME challenges will use our HTTP server on port ${httpPort}`);
     console.log(`\n[Payload Server] Ready! Both HTTP and HTTPS are serving payloads`);
     
     // Note about first-time certificate generation
