@@ -4,7 +4,6 @@ const get_app_server = require('./app-refactored.js');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 
 // Check if we're running in development mode
 const isDevelopment = process.env.DEV_MODE === 'true' || process.env.NODE_ENV === 'development';
@@ -65,48 +64,22 @@ async function startWithSSL(httpPort, httpsPort) {
     
     console.log(`[Greenlock] Initializing (with patch applied to skip port 80)`);
     
-    const greenlock = require('greenlock-express').init({
+    // First create the Greenlock instance through greenlock-shim
+    const GreenlockShim = require('@root/greenlock-express/greenlock-shim.js');
+    const greenlock = GreenlockShim.create({
         packageRoot: '/app/server-ng',
         configDir: configDir,
-        maintainerEmail: process.env.SSL_CONTACT_EMAIL,
-        cluster: false
+        maintainerEmail: process.env.SSL_CONTACT_EMAIL
     });
     
-    // Create our own ACME challenge middleware
-    const acmeApp = express();
+    // Now we have access to greenlock.getAcmeHttp01ChallengeResponse
     
-    // Handle ACME challenges
-    acmeApp.use('/.well-known/acme-challenge/', async (req, res, next) => {
-        const token = req.path.slice(1); // Remove leading slash
-        console.log(`[ACME] Challenge request for token: ${token}`);
-        
-        try {
-            // Use Greenlock's internal method to get the challenge response
-            const result = await greenlock.getAcmeHttp01ChallengeResponse({
-                type: 'http-01',
-                servername: req.hostname,
-                token: token
-            });
-            
-            if (result && result.keyAuthorization) {
-                console.log(`[ACME] Responding with challenge for ${req.hostname}`);
-                res.type('text/plain');
-                res.send(result.keyAuthorization);
-            } else {
-                console.log(`[ACME] No challenge found for token ${token}`);
-                res.status(404).send('Challenge not found');
-            }
-        } catch (err) {
-            console.error(`[ACME] Error getting challenge:`, err.message);
-            res.status(404).send('Challenge not found');
-        }
-    });
+    // Create HTTP middleware using Greenlock's built-in middleware
+    const HttpMiddleware = require('@root/greenlock-express/http-middleware.js');
+    const acmeMiddleware = HttpMiddleware.create(greenlock, app);
     
-    // Fall back to main app for all other requests
-    acmeApp.use(app);
-    
-    // Start HTTP server with our ACME-aware app
-    const httpServer = http.createServer(acmeApp);
+    // Start HTTP server with the middleware that handles both ACME and regular requests
+    const httpServer = http.createServer(acmeMiddleware);
     
     httpServer.listen(httpPort, () => {
         console.log(`[HTTP Server] Listening on port ${httpPort}`);
@@ -115,8 +88,16 @@ async function startWithSSL(httpPort, httpsPort) {
         console.log(`[HTTP Server] Protocol-relative URLs (//domain/) work on HTTP sites`);
     });
     
-    // With our patch applied, greenlock.serve() will only bind to port 443
-    const servers = greenlock.serve(app);
+    // Now create the greenlock-express wrapper for HTTPS
+    const glx = require('greenlock-express').init({
+        packageRoot: '/app/server-ng',
+        configDir: configDir,
+        maintainerEmail: process.env.SSL_CONTACT_EMAIL,
+        cluster: false
+    });
+    
+    // With our patch applied, glx.serve() will only bind to port 443
+    const servers = glx.serve(app);
     
     console.log(`[Greenlock] Managing HTTPS on port ${httpsPort} with auto-renewal`);
     console.log(`\n[Payload Server] Ready! Both HTTP and HTTPS are serving payloads`);
