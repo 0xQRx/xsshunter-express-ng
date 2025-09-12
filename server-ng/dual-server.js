@@ -1,7 +1,7 @@
 'use strict';
 
 const database = require('./shared/database.js');
-const { importPayloadsOnStartup } = require('./shared/utils/payload-importer.js');
+const { importExtensionsOnStartup } = require('./shared/utils/extension-importer.js');
 const cleanupJobs = require('./shared/utils/cleanup-jobs.js');
 
 // Import server modules
@@ -37,10 +37,10 @@ if (!isDevelopment && !process.env.SSL_CONTACT_EMAIL) {
         await database.database_init();
         console.log('[Database] Initialized successfully');
         
-        // Import custom payloads from files
-        console.log('[Payloads] Importing custom payloads...');
-        await importPayloadsOnStartup();
-        console.log('[Payloads] Import complete');
+        // Import custom extensions from files
+        console.log('[Extensions] Importing custom extensions...');
+        await importExtensionsOnStartup();
+        console.log('[Extensions] Import complete');
         
         // Initialize background cleanup jobs (runs in main process)
         console.log('[Cleanup] Initializing cleanup jobs...');

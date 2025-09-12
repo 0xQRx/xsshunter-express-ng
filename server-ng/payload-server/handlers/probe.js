@@ -11,7 +11,7 @@ const config = require('../../shared/config.js');
 const constants = require('../../shared/constants.js');
 const Settings = database.Settings;
 const ProbeTokens = database.ProbeTokens;
-const Payloads = database.Payloads;
+const Extensions = database.Extensions;
 
 // Load XSS payload from file into memory
 const XSS_PAYLOAD = fs.readFileSync(
@@ -88,7 +88,7 @@ async function serveProbe(req, res) {
                     key: constants.CHAINLOAD_URI_SETTINGS_KEY,
                 }
             }),
-            Payloads.findAll({
+            Extensions.findAll({
                 where: {
                     is_active: true
                 },
@@ -100,7 +100,7 @@ async function serveProbe(req, res) {
         const db_results = await Promise.all(db_promises);
         const pages_to_collect = (db_results[0] === null) ? [] : JSON.parse(db_results[0].value);
         const chainload_uri = (db_results[1] === null) ? '' : db_results[1].value;
-        const active_payloads = (db_results[2] || []).map(p => {
+        const active_extensions = (db_results[2] || []).map(p => {
             if (p.minified_code) {
                 return p.minified_code;
             }
@@ -130,7 +130,7 @@ async function serveProbe(req, res) {
             JSON.stringify(probe_id)
         ).replace(
             '[CUSTOM_PAYLOADS_REPLACE_ME]',
-            JSON.stringify(active_payloads)
+            JSON.stringify(active_extensions)
         ));
     } catch (error) {
         console.error('[Probe Handler] Error fetching configuration:', error);

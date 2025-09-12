@@ -192,25 +192,29 @@ export async function update_pages_to_collect(pages_to_collect: string[]) {
   )
 }
 
-// Payload Console API functions
-export async function get_payloads() {
-  return api_request('GET', `/api/v1/payloads`, false)
+// Extension Console API functions
+export async function get_extensions() {
+  return api_request('GET', `/api/v1/extensions`, false)
 }
 
-export async function get_payload(id: string) {
-  return api_request('GET', `/api/v1/payloads/${id}`, false)
+export async function get_extension(id: string) {
+  return api_request('GET', `/api/v1/extensions/${id}`, false)
 }
 
-export async function create_payload(payload: any) {
-  return api_request('POST', `/api/v1/payloads`, payload)
+export async function create_extension(extension: any) {
+  return api_request('POST', `/api/v1/extensions`, extension)
 }
 
-export async function update_payload(id: string, payload: any) {
-  return api_request('PUT', `/api/v1/payloads/${id}`, payload)
+export async function update_extension(id: string, extension: any) {
+  return api_request('PUT', `/api/v1/extensions/${id}`, extension)
 }
 
-export async function delete_payload(id: string) {
-  return api_request('DELETE', `/api/v1/payloads/${id}`, false)
+export async function delete_extension(id: string) {
+  return api_request('DELETE', `/api/v1/extensions/${id}`, false)
+}
+
+export async function generate_test_token() {
+  return api_request('POST', '/api/v1/generate-test-token', {})
 }
 
 export default {
@@ -231,10 +235,11 @@ export default {
   set_discord_alerts,
   revoke_all_sessions,
   update_pages_to_collect,
-  // Payload Console
-  get_payloads,
-  get_payload,
-  create_payload,
-  update_payload,
-  delete_payload
+  // Extension Console
+  get_extensions,
+  get_extension,
+  create_extension,
+  update_extension,
+  delete_extension,
+  generate_test_token
 }

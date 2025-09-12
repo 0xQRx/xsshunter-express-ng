@@ -1,10 +1,10 @@
 /**
- * Payload Importer Module
+ * Extension Importer Module
  * 
- * This module reads JavaScript payload files from the server/custom_payloads_js directory
+ * This module reads JavaScript extension files from the server/custom_extensions_js directory
  * and imports them into the database. Each file should have:
- * - // Name: <payload name>
- * - // Description: <payload description>
+ * - // Name: <extension name>
+ * - // Description: <extension description>
  * - The actual JavaScript code
  * 
  * Called automatically during server startup
@@ -13,12 +13,12 @@
 const fs = require('fs');
 const path = require('path');
 const database = require('../database.js');
-const { minifyAndEncodePayload } = require('./payload-utils.js');
+const { minifyAndEncodeExtension } = require('./extension-utils.js');
 
-const Payloads = database.Payloads;
+const Extensions = database.Extensions;
 
-// Directory containing the custom payload scripts
-const PAYLOADS_DIR = path.join(__dirname, '..', '..', 'custom_payloads_js');
+// Directory containing the custom extension scripts
+const EXTENSIONS_DIR = path.join(__dirname, '..', '..', 'custom-extensions-js');
 
 // Color codes for output
 const RED = '\033[0;31m';
@@ -28,11 +28,11 @@ const BLUE = '\033[0;34m';
 const NC = '\033[0m'; // No Color
 
 /**
- * Extract metadata from payload file
+ * Extract metadata from extension file
  * @param {string} content - File content
  * @returns {object} - { name, description, code }
  */
-function extractPayloadMetadata(content) {
+function extractExtensionMetadata(content) {
     const lines = content.split('\n');
     let name = '';
     let description = '';
@@ -63,11 +63,11 @@ function extractPayloadMetadata(content) {
 }
 
 /**
- * Import a single payload file
- * @param {string} filePath - Path to the payload file
+ * Import a single extension file
+ * @param {string} filePath - Path to the extension file
  * @returns {Promise<boolean>} - Success status
  */
-async function importPayload(filePath) {
+async function importExtension(filePath) {
     const fileName = path.basename(filePath);
     
     try {
@@ -77,28 +77,28 @@ async function importPayload(filePath) {
         const content = fs.readFileSync(filePath, 'utf8');
         
         // Extract metadata
-        const { name, description, code } = extractPayloadMetadata(content);
+        const { name, description, code } = extractExtensionMetadata(content);
         
         if (!name || !code) {
             console.log(`${YELLOW}[WARNING]${NC} Skipping ${fileName} - missing name or code`);
             return false;
         }
         
-        // Check if payload with this name already exists
-        const existingPayload = await Payloads.findOne({
+        // Check if extension with this name already exists
+        const existingExtension = await Extensions.findOne({
             where: { name }
         });
         
-        if (existingPayload) {
-            console.log(`${YELLOW}[SKIP]${NC} Payload "${name}" already exists in database`);
+        if (existingExtension) {
+            console.log(`${YELLOW}[SKIP]${NC} Extension "${name}" already exists in database`);
             return false;
         }
         
-        // Minify and encode the payload
-        const minifiedCode = await minifyAndEncodePayload(code);
+        // Minify and encode the extension
+        const minifiedCode = await minifyAndEncodeExtension(code);
         
-        // Create the payload in the database
-        await Payloads.create({
+        // Create the extension in the database
+        await Extensions.create({
             name,
             description: description || `Imported from ${fileName}`,
             code,
@@ -106,7 +106,7 @@ async function importPayload(filePath) {
             is_active: false // Default to inactive, user can enable in UI
         });
         
-        console.log(`${GREEN}[SUCCESS]${NC} Imported payload: ${name}`);
+        console.log(`${GREEN}[SUCCESS]${NC} Imported extension: ${name}`);
         return true;
         
     } catch (error) {
@@ -119,25 +119,25 @@ async function importPayload(filePath) {
  * Main import function for server startup
  * This is a simplified version that runs during server initialization
  */
-async function importPayloadsOnStartup() {
-    // Check if payloads directory exists
-    if (!fs.existsSync(PAYLOADS_DIR)) {
-        console.log(`${YELLOW}[Payload Import]${NC} Payloads directory not found, skipping import`);
+async function importExtensionsOnStartup() {
+    // Check if extensions directory exists
+    if (!fs.existsSync(EXTENSIONS_DIR)) {
+        console.log(`${YELLOW}[Extension Import]${NC} Extensions directory not found, skipping import`);
         return;
     }
     
-    // Read all .js files from the payloads directory
-    const files = fs.readdirSync(PAYLOADS_DIR)
+    // Read all .js files from the extensions directory
+    const files = fs.readdirSync(EXTENSIONS_DIR)
         .filter(file => file.endsWith('.js'))
-        .map(file => path.join(PAYLOADS_DIR, file));
+        .map(file => path.join(EXTENSIONS_DIR, file));
     
     if (files.length === 0) {
         return;
     }
     
-    console.log(`${BLUE}[Payload Import]${NC} Checking ${files.length} payload files...`);
+    console.log(`${BLUE}[Extension Import]${NC} Checking ${files.length} extension files...`);
     
-    // Import each payload
+    // Import each extension
     let successCount = 0;
     let skipCount = 0;
     
@@ -149,27 +149,27 @@ async function importPayloadsOnStartup() {
             const content = fs.readFileSync(file, 'utf8');
             
             // Extract metadata
-            const { name, description, code } = extractPayloadMetadata(content);
+            const { name, description, code } = extractExtensionMetadata(content);
             
             if (!name || !code) {
                 continue;
             }
             
-            // Check if payload with this name already exists
-            const existingPayload = await Payloads.findOne({
+            // Check if extension with this name already exists
+            const existingExtension = await Extensions.findOne({
                 where: { name }
             });
             
-            if (existingPayload) {
+            if (existingExtension) {
                 skipCount++;
                 continue;
             }
             
-            // Minify and encode the payload
-            const minifiedCode = await minifyAndEncodePayload(code);
+            // Minify and encode the extension
+            const minifiedCode = await minifyAndEncodeExtension(code);
             
-            // Create the payload in the database
-            await Payloads.create({
+            // Create the extension in the database
+            await Extensions.create({
                 name,
                 description: description || `Imported from ${fileName}`,
                 code,
@@ -180,20 +180,20 @@ async function importPayloadsOnStartup() {
             successCount++;
             
         } catch (error) {
-            console.error(`${YELLOW}[Payload Import]${NC} Failed to import ${fileName}:`, error.message);
+            console.error(`${YELLOW}[Extension Import]${NC} Failed to import ${fileName}:`, error.message);
         }
     }
     
     // Only show summary if there were changes
     if (successCount > 0) {
-        console.log(`${GREEN}[Payload Import]${NC} Imported ${successCount} new payloads (inactive by default)`);
+        console.log(`${GREEN}[Extension Import]${NC} Imported ${successCount} new extensions (inactive by default)`);
     }
     if (skipCount > 0 && successCount === 0) {
-        console.log(`${BLUE}[Payload Import]${NC} All ${skipCount} payloads already exist in database`);
+        console.log(`${BLUE}[Extension Import]${NC} All ${skipCount} extensions already exist in database`);
     }
 }
 
 // Export the startup function
 module.exports = {
-    importPayloadsOnStartup
+    importExtensionsOnStartup
 };

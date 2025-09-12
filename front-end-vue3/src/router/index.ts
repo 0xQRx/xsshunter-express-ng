@@ -36,8 +36,8 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/console',
-        name: 'Console',
-        component: () => import('@/views/PayloadConsole.vue'),
+        name: 'ExtensionConsole',
+        component: () => import('@/views/ExtensionConsole.vue'),
         meta: { requiresAuth: true }
       },
       {

@@ -1,5 +1,5 @@
 /**
- * Payload management routes
+ * Extension management routes
  */
 
 const express = require('express');
@@ -7,75 +7,75 @@ const router = express.Router();
 const { validate } = require('express-jsonschema');
 
 const database = require('../../shared/database.js');
-const Payloads = database.Payloads;
-const { CreatePayloadSchema, UpdatePayloadSchema } = require('../middleware/validation');
-const { minifyAndEncodePayload } = require('../../shared/utils/payload-utils.js');
+const Extensions = database.Extensions;
+const { CreateExtensionSchema, UpdateExtensionSchema } = require('../middleware/validation');
+const { minifyAndEncodeExtension } = require('../../shared/utils/extension-utils.js');
 
 /**
- * GET /api/v1/payloads
- * List all payloads
+ * GET /api/v1/extensions
+ * List all extensions
  */
 router.get('/', async (req, res) => {
     try {
-        const payloads = await Payloads.findAll({
+        const extensions = await Extensions.findAll({
             order: [['created_at', 'DESC']]
         });
 
         res.status(200).json({
             "success": true,
-            "payloads": payloads
+            "extensions": extensions
         }).end();
     } catch (error) {
-        console.error('Error fetching payloads:', error);
+        console.error('Error fetching extensions:', error);
         res.status(500).json({
             "success": false,
-            "error": "Failed to fetch payloads"
+            "error": "Failed to fetch extensions"
         }).end();
     }
 });
 
 /**
- * GET /api/v1/payloads/:id
- * Get single payload by ID
+ * GET /api/v1/extensions/:id
+ * Get single extension by ID
  */
 router.get('/:id', async (req, res) => {
     try {
-        const payload = await Payloads.findByPk(req.params.id);
+        const extension = await Extensions.findByPk(req.params.id);
         
-        if (!payload) {
+        if (!extension) {
             res.status(404).json({
                 "success": false,
-                "error": "Payload not found"
+                "error": "Extension not found"
             }).end();
             return;
         }
 
         res.status(200).json({
             "success": true,
-            "payload": payload
+            "extension": extension
         }).end();
     } catch (error) {
-        console.error('Error fetching payload:', error);
+        console.error('Error fetching extension:', error);
         res.status(500).json({
             "success": false,
-            "error": "Failed to fetch payload"
+            "error": "Failed to fetch extension"
         }).end();
     }
 });
 
 /**
- * POST /api/v1/payloads
- * Create new payload
+ * POST /api/v1/extensions
+ * Create new extension
  */
-router.post('/', validate({ body: CreatePayloadSchema }), async (req, res) => {
+router.post('/', validate({ body: CreateExtensionSchema }), async (req, res) => {
     try {
-        // Minify and encode the payload if it's JavaScript
+        // Minify and encode the extension if it's JavaScript
         let minifiedCode = '';
         if (req.body.code && (!req.body.type || req.body.type === 'javascript')) {
-            minifiedCode = await minifyAndEncodePayload(req.body.code);
+            minifiedCode = await minifyAndEncodeExtension(req.body.code);
         }
         
-        const payload = await Payloads.create({
+        const extension = await Extensions.create({
             name: req.body.name,
             description: req.body.description || '',
             code: req.body.code,
@@ -89,29 +89,29 @@ router.post('/', validate({ body: CreatePayloadSchema }), async (req, res) => {
 
         res.status(201).json({
             "success": true,
-            "payload": payload
+            "extension": extension
         }).end();
     } catch (error) {
-        console.error('Error creating payload:', error);
+        console.error('Error creating extension:', error);
         res.status(500).json({
             "success": false,
-            "error": "Failed to create payload"
+            "error": "Failed to create extension"
         }).end();
     }
 });
 
 /**
- * PUT /api/v1/payloads/:id
- * Update payload
+ * PUT /api/v1/extensions/:id
+ * Update extension
  */
-router.put('/:id', validate({ body: UpdatePayloadSchema }), async (req, res) => {
+router.put('/:id', validate({ body: UpdateExtensionSchema }), async (req, res) => {
     try {
-        const payload = await Payloads.findByPk(req.params.id);
+        const extension = await Extensions.findByPk(req.params.id);
         
-        if (!payload) {
+        if (!extension) {
             res.status(404).json({
                 "success": false,
-                "error": "Payload not found"
+                "error": "Extension not found"
             }).end();
             return;
         }
@@ -134,52 +134,52 @@ router.put('/:id', validate({ body: UpdatePayloadSchema }), async (req, res) => 
             
             // If code is being updated and it's JavaScript, minify and encode it
             if (req.body.code && (!req.body.type || req.body.type === 'javascript')) {
-                updateData.minified_code = await minifyAndEncodePayload(req.body.code);
+                updateData.minified_code = await minifyAndEncodeExtension(req.body.code);
             }
         }
         
-        await payload.update(updateData);
+        await extension.update(updateData);
 
         res.status(200).json({
             "success": true,
-            "payload": payload
+            "extension": extension
         }).end();
     } catch (error) {
-        console.error('Error updating payload:', error);
+        console.error('Error updating extension:', error);
         res.status(500).json({
             "success": false,
-            "error": "Failed to update payload"
+            "error": "Failed to update extension"
         }).end();
     }
 });
 
 /**
- * DELETE /api/v1/payloads/:id
- * Delete payload
+ * DELETE /api/v1/extensions/:id
+ * Delete extension
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const payload = await Payloads.findByPk(req.params.id);
+        const extension = await Extensions.findByPk(req.params.id);
         
-        if (!payload) {
+        if (!extension) {
             res.status(404).json({
                 "success": false,
-                "error": "Payload not found"
+                "error": "Extension not found"
             }).end();
             return;
         }
 
-        await payload.destroy();
+        await extension.destroy();
 
         res.status(200).json({
             "success": true,
-            "message": "Payload deleted successfully"
+            "message": "Extension deleted successfully"
         }).end();
     } catch (error) {
-        console.error('Error deleting payload:', error);
+        console.error('Error deleting extension:', error);
         res.status(500).json({
             "success": false,
-            "error": "Failed to delete payload"
+            "error": "Failed to delete extension"
         }).end();
     }
 });

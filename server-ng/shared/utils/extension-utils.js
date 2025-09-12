@@ -1,7 +1,7 @@
 const { minify } = require('terser');
 
 // Helper function to minify and base64 encode JavaScript code
-async function minifyAndEncodePayload(code) {
+async function minifyAndEncodeExtension(code) {
     try {
         // Minify the code using terser with aggressive settings
         const minified = await minify(code, {
@@ -53,12 +53,12 @@ async function minifyAndEncodePayload(code) {
         const base64Encoded = Buffer.from(minified.code || code).toString('base64');
         return base64Encoded;
     } catch (error) {
-        console.error('Failed to minify payload:', error);
+        console.error('Failed to minify extension:', error);
         // If minification fails, just base64 encode the original
         return Buffer.from(code).toString('base64');
     }
 }
 
 module.exports = {
-    minifyAndEncodePayload
+    minifyAndEncodeExtension
 };

@@ -307,8 +307,8 @@ InjectionRequests.init({
 });
 
 // Custom JavaScript Payloads for advanced XSS exploitation
-class Payloads extends Model {}
-Payloads.init({
+class Extensions extends Model {}
+Extensions.init({
 	id: {
 		allowNull: false,
 		primaryKey: true,
@@ -338,7 +338,7 @@ Payloads.init({
 	}
 }, {
 	sequelize,
-	modelName: 'payloads',
+	modelName: 'extensions',
 	timestamps: true,
 	createdAt: 'created_at',
 	updatedAt: 'updated_at'
@@ -486,7 +486,7 @@ async function database_init() {
 		PayloadFireResults.sync({ force: force }),
 		CollectedPages.sync({ force: force }),
 		InjectionRequests.sync({ force: force }),
-		Payloads.sync({ force: force }),
+		Extensions.sync({ force: force }),
 		ProbeTokens.sync({ force: force }),
 	]);
 
@@ -577,7 +577,7 @@ module.exports = {
 	PayloadFireResults,
 	CollectedPages,
 	InjectionRequests,
-	Payloads,
+	Extensions,
 	ProbeTokens,
 	database_init,
 	update_settings_value

@@ -6,19 +6,19 @@
           <div class="card-header">
             <div class="row">
               <div class="col-6">
-                <h1 class="card-title">Payload Console</h1>
+                <h1 class="card-title">Extension Console</h1>
               </div>
               <div class="col-6 text-right">
-                <BaseButton @click="showNewPayloadModal" type="primary" size="sm">
-                  <i class="fa fa-plus"></i> New Payload
+                <BaseButton @click="showNewExtensionModal" type="primary" size="sm">
+                  <i class="fa fa-plus"></i> New Extension
                 </BaseButton>
               </div>
             </div>
           </div>
           <div class="card-body">
-            <!-- Payloads List -->
-            <div v-if="payloads.length === 0" class="text-center text-muted">
-              <p>No payloads created yet. Click "New Payload" to get started!</p>
+            <!-- Extensions List -->
+            <div v-if="extensions.length === 0" class="text-center text-muted">
+              <p>No extensions created yet. Click "New Extension" to get started!</p>
             </div>
             
             <!-- Desktop Table View -->
@@ -34,23 +34,23 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="payload in payloads" :key="payload.id">
-                    <td class="payload-name">{{ payload.name }}</td>
-                    <td class="payload-description d-none d-lg-table-cell">{{ payload.description || 'No description' }}</td>
-                    <td class="payload-status">
-                      <span :class="['badge', payload.is_active ? 'badge-success' : 'badge-secondary']">
-                        {{ payload.is_active ? 'Active' : 'Inactive' }}
+                  <tr v-for="extension in extensions" :key="extension.id">
+                    <td class="extension-name">{{ extension.name }}</td>
+                    <td class="extension-description d-none d-lg-table-cell">{{ extension.description || 'No description' }}</td>
+                    <td class="extension-status">
+                      <span :class="['badge', extension.is_active ? 'badge-success' : 'badge-secondary']">
+                        {{ extension.is_active ? 'Active' : 'Inactive' }}
                       </span>
                     </td>
-                    <td class="payload-date d-none d-xl-table-cell">{{ formatDate(payload.created_at) }}</td>
-                    <td class="payload-actions">
-                      <button @click="editPayload(payload)" class="btn btn-sm btn-info mr-1" title="Edit">
+                    <td class="extension-date d-none d-xl-table-cell">{{ formatDate(extension.created_at) }}</td>
+                    <td class="extension-actions">
+                      <button @click="editExtension(extension)" class="btn btn-sm btn-info mr-1" title="Edit">
                         <i class="fa fa-edit"></i>
                       </button>
-                      <button @click="togglePayloadStatus(payload)" :class="['btn', 'btn-sm', 'mr-1', payload.is_active ? 'btn-warning' : 'btn-success']" :title="payload.is_active ? 'Deactivate' : 'Activate'">
-                        <i :class="['fa', payload.is_active ? 'fa-pause' : 'fa-play']"></i>
+                      <button @click="toggleExtensionStatus(extension)" :class="['btn', 'btn-sm', 'mr-1', extension.is_active ? 'btn-warning' : 'btn-success']" :title="extension.is_active ? 'Deactivate' : 'Activate'">
+                        <i :class="['fa', extension.is_active ? 'fa-pause' : 'fa-play']"></i>
                       </button>
-                      <button @click="deletePayload(payload)" class="btn btn-sm btn-danger" title="Delete">
+                      <button @click="deleteExtension(extension)" class="btn btn-sm btn-danger" title="Delete">
                         <i class="fa fa-trash"></i>
                       </button>
                     </td>
@@ -60,31 +60,31 @@
             </div>
             
             <!-- Mobile Card View -->
-            <div v-if="payloads.length > 0" class="d-block d-md-none mobile-payload-list">
-              <div v-for="payload in payloads" :key="payload.id" class="mobile-payload-card">
+            <div v-if="extensions.length > 0" class="d-block d-md-none mobile-extension-list">
+              <div v-for="extension in extensions" :key="extension.id" class="mobile-extension-card">
                 <div class="card-header">
-                  <h5 class="mb-0">{{ payload.name }}</h5>
-                  <span :class="['badge', payload.is_active ? 'badge-success' : 'badge-secondary']">
-                    {{ payload.is_active ? 'Active' : 'Inactive' }}
+                  <h5 class="mb-0">{{ extension.name }}</h5>
+                  <span :class="['badge', extension.is_active ? 'badge-success' : 'badge-secondary']">
+                    {{ extension.is_active ? 'Active' : 'Inactive' }}
                   </span>
                 </div>
                 <div class="card-body">
-                  <p class="text-muted small mb-2" v-if="payload.description">
-                    {{ payload.description }}
+                  <p class="text-muted small mb-2" v-if="extension.description">
+                    {{ extension.description }}
                   </p>
                   <p class="text-muted small mb-3">
-                    <i class="fa fa-clock-o"></i> {{ formatDate(payload.created_at) }}
+                    <i class="fa fa-clock-o"></i> {{ formatDate(extension.created_at) }}
                   </p>
                   <div class="btn-group w-100" role="group">
-                    <button @click="editPayload(payload)" class="btn btn-info" title="Edit">
+                    <button @click="editExtension(extension)" class="btn btn-info" title="Edit">
                       <i class="fa fa-edit"></i>
                       <span class="d-none d-sm-inline"> Edit</span>
                     </button>
-                    <button @click="togglePayloadStatus(payload)" :class="['btn', payload.is_active ? 'btn-warning' : 'btn-success']" :title="payload.is_active ? 'Deactivate' : 'Activate'">
-                      <i :class="['fa', payload.is_active ? 'fa-pause' : 'fa-play']"></i>
-                      <span class="d-none d-sm-inline"> {{ payload.is_active ? 'Pause' : 'Play' }}</span>
+                    <button @click="toggleExtensionStatus(extension)" :class="['btn', extension.is_active ? 'btn-warning' : 'btn-success']" :title="extension.is_active ? 'Deactivate' : 'Activate'">
+                      <i :class="['fa', extension.is_active ? 'fa-pause' : 'fa-play']"></i>
+                      <span class="d-none d-sm-inline"> {{ extension.is_active ? 'Pause' : 'Play' }}</span>
                     </button>
-                    <button @click="deletePayload(payload)" class="btn btn-danger" title="Delete">
+                    <button @click="deleteExtension(extension)" class="btn btn-danger" title="Delete">
                       <i class="fa fa-trash"></i>
                     </button>
                   </div>
@@ -96,7 +96,7 @@
       </div>
     </div>
 
-    <!-- Edit/Create Payload Modal -->
+    <!-- Edit/Create Extension Modal -->
     <Modal 
       v-model="showModal"
       :show-close="true"
@@ -106,48 +106,48 @@
       type=""
       modal-classes="modal-xl modal-black">
       <template #header>
-        <h4 class="modal-title">{{ editingPayload ? 'Edit Payload' : 'New Payload' }}</h4>
+        <h4 class="modal-title">{{ editingExtension ? 'Edit Extension' : 'New Extension' }}</h4>
       </template>
       
       <div class="form-group">
         <label>Name *</label>
-        <BaseInput v-model="currentPayload.name" type="text" placeholder="My Custom Payload" />
+        <BaseInput v-model="currentExtension.name" type="text" placeholder="My Custom Extension" />
       </div>
       
       <div class="form-group">
         <label>Description</label>
-        <textarea v-model="currentPayload.description" class="form-control" rows="2" placeholder="Brief description of what this payload does"></textarea>
+        <textarea v-model="currentExtension.description" class="form-control" rows="2" placeholder="Brief description of what this extension does"></textarea>
       </div>
       
       <div class="form-group">
         <label>JavaScript Code *</label>
         <CodeEditor
-          v-model="currentPayload.code"
+          v-model="currentExtension.code"
           language="javascript"
-          class="payload-code-editor"
+          class="extension-code-editor"
         />
         <small class="form-text text-muted">
-          This code will be executed when the XSS payload fires. You have access to all DOM APIs and the captured context.
+          This code will be executed when the XSS fires. You have access to all DOM APIs and the captured context.
         </small>
       </div>
       
       <div class="form-group">
         <div class="form-check">
           <label class="form-check-label">
-            <input v-model="currentPayload.is_active" type="checkbox" class="form-check-input">
+            <input v-model="currentExtension.is_active" type="checkbox" class="form-check-input">
             <span class="form-check-sign"></span>
-            <span>Activate this payload (will be executed on XSS fires)</span>
+            <span>Activate this extension (will be executed on XSS fires)</span>
           </label>
         </div>
       </div>
       
       <template #footer>
         <BaseButton @click="closeModal" type="secondary">Cancel</BaseButton>
-        <BaseButton @click="testCurrentPayload" type="info" :disabled="!currentPayload.code">
+        <BaseButton @click="testCurrentExtension" type="info" :disabled="!currentExtension.code">
           <i class="fa fa-flask"></i> Test
         </BaseButton>
-        <BaseButton @click="savePayload" type="success" :disabled="!isValidPayload">
-          <i class="fa fa-save"></i> {{ editingPayload ? 'Update' : 'Create' }}
+        <BaseButton @click="saveExtension" type="success" :disabled="!isValidExtension">
+          <i class="fa fa-save"></i> {{ editingExtension ? 'Update' : 'Create' }}
         </BaseButton>
       </template>
     </Modal>
@@ -167,10 +167,10 @@ import { useToast } from '@/composables/useToast'
 const { showSuccess, showError } = useToast()
 
 // Data
-const payloads = ref<any[]>([])
+const extensions = ref<any[]>([])
 const showModal = ref(false)
-const editingPayload = ref<any>(null)
-const currentPayload = ref({
+const editingExtension = ref<any>(null)
+const currentExtension = ref({
   name: '',
   description: '',
   code: '',
@@ -178,29 +178,29 @@ const currentPayload = ref({
 })
 
 // Computed
-const isValidPayload = computed(() => {
-  return currentPayload.value.name && currentPayload.value.code
+const isValidExtension = computed(() => {
+  return currentExtension.value.name && currentExtension.value.code
 })
 
 // Methods
-const loadPayloads = async () => {
+const loadExtensions = async () => {
   try {
-    const response = await api_request.get_payloads()
+    const response = await api_request.get_extensions()
     if (response.success) {
-      payloads.value = response.payloads || []
+      extensions.value = response.extensions || []
     }
   } catch (error) {
-    console.error('Failed to load payloads:', error)
-    showError('Failed to load payloads')
+    console.error('Failed to load extensions:', error)
+    showError('Failed to load extensions')
   }
 }
 
-const showNewPayloadModal = () => {
-  editingPayload.value = null
-  currentPayload.value = {
+const showNewExtensionModal = () => {
+  editingExtension.value = null
+  currentExtension.value = {
     name: '',
     description: '',
-    code: `// Example payload
+    code: `// Example extension
 console.log("XSS Fired at:", window.location.href);
 console.log("Cookies:", document.cookie);
 
@@ -213,69 +213,73 @@ if (typeof fetch !== "undefined") {
   showModal.value = true
 }
 
-const editPayload = (payload: any) => {
-  editingPayload.value = payload
-  currentPayload.value = {
-    name: payload.name,
-    description: payload.description,
-    code: payload.code,
-    is_active: payload.is_active
+const editExtension = (extension: any) => {
+  editingExtension.value = extension
+  currentExtension.value = {
+    name: extension.name,
+    description: extension.description,
+    code: extension.code,
+    is_active: extension.is_active
   }
   showModal.value = true
 }
 
-const savePayload = async () => {
+const saveExtension = async () => {
   try {
     let response
-    if (editingPayload.value) {
-      response = await api_request.update_payload(editingPayload.value.id, currentPayload.value)
+    if (editingExtension.value) {
+      response = await api_request.update_extension(editingExtension.value.id, currentExtension.value)
     } else {
-      response = await api_request.create_payload(currentPayload.value)
+      response = await api_request.create_extension(currentExtension.value)
     }
     
     if (response.success) {
       showSuccess(
-        editingPayload.value ? 'Payload updated successfully' : 'Payload created successfully'
+        editingExtension.value ? 'Extension updated successfully' : 'Extension created successfully'
       )
-      await loadPayloads()
+      await loadExtensions()
       closeModal()
     }
   } catch (error) {
-    console.error('Failed to save payload:', error)
-    showError('Failed to save payload')
+    console.error('Failed to save extension:', error)
+    showError('Failed to save extension')
   }
 }
 
-const testCurrentPayload = async () => {
-  await testPayloadCode(currentPayload.value.code)
+const testCurrentExtension = async () => {
+  await testExtensionCode(currentExtension.value.code)
 }
 
-const testPayloadCode = async (code: string) => {
+const testExtensionCode = async (code: string) => {
   // Show warning
-  if (!confirm('Warning: This will open a popup window to test the payload. Continue?')) {
+  if (!confirm('Warning: This will open a popup window to test the extension. Continue?')) {
     return
   }
   
   try {
     // First, get a test token from the authenticated API
-    const tokenData = await api_request.api_request(
-      'POST',
-      '/api/v1/generate-test-token',
-      {}
-    )
+    const tokenData = await api_request.generate_test_token()
 
-    if (!tokenData.success) {
+    if (!tokenData || !tokenData.token) {
       showError('Failed to generate test token. Please try again.')
       return
     }
 
     const testToken = tokenData.token
 
+    // Open popup window first with specific settings
+    const testWindow = window.open('about:blank', 'ExtensionTest', 'width=800,height=600,toolbar=no,menubar=no,location=no,status=no,resizable=yes,scrollbars=yes')
+    
+    if (!testWindow) {
+      showError('Popup blocked! Please allow popups for this site to test extensions.')
+      return
+    }
+    
     // Create a form to POST the code to our test endpoint
     const form = document.createElement('form')
     form.method = 'POST'
     form.action = '/test-payload'
-    form.target = 'PayloadTest'
+    form.target = 'ExtensionTest'
     
     const codeInput = document.createElement('input')
     codeInput.type = 'hidden'
@@ -289,20 +293,12 @@ const testPayloadCode = async (code: string) => {
     tokenInput.value = testToken
     form.appendChild(tokenInput)
     
-    // Open popup window
-    const testWindow = window.open('', 'PayloadTest', 'width=800,height=600,toolbar=no,menubar=no,location=no')
-    
-    if (!testWindow) {
-      showError('Popup blocked! Please allow popups for this site to test payloads.')
-      return
-    }
-    
     // Submit form to the popup
     document.body.appendChild(form)
     form.submit()
     document.body.removeChild(form)
     
-    showSuccess('Payload test window opened. Check the popup for results.')
+    showSuccess('Extension test window opened. Check the popup for results.')
     
   } catch (error) {
     console.error('Failed to create test environment:', error)
@@ -310,45 +306,45 @@ const testPayloadCode = async (code: string) => {
   }
 }
 
-const togglePayloadStatus = async (payload: any) => {
+const toggleExtensionStatus = async (extension: any) => {
   try {
-    const response = await api_request.update_payload(payload.id, {
-      is_active: !payload.is_active
+    const response = await api_request.update_extension(extension.id, {
+      is_active: !extension.is_active
     })
     
     if (response.success) {
       showSuccess(
-        payload.is_active ? 'Payload deactivated' : 'Payload activated'
+        extension.is_active ? 'Extension deactivated' : 'Extension activated'
       )
-      await loadPayloads()
+      await loadExtensions()
     }
   } catch (error) {
-    console.error('Failed to toggle payload status:', error)
-    showError('Failed to update payload status')
+    console.error('Failed to toggle extension status:', error)
+    showError('Failed to update extension status')
   }
 }
 
-const deletePayload = async (payload: any) => {
-  if (!confirm(`Are you sure you want to delete "${payload.name}"?`)) {
+const deleteExtension = async (extension: any) => {
+  if (!confirm(`Are you sure you want to delete "${extension.name}"?`)) {
     return
   }
   
   try {
-    const response = await api_request.delete_payload(payload.id)
+    const response = await api_request.delete_extension(extension.id)
     if (response.success) {
-      showSuccess('Payload deleted successfully')
-      await loadPayloads()
+      showSuccess('Extension deleted successfully')
+      await loadExtensions()
     }
   } catch (error) {
-    console.error('Failed to delete payload:', error)
-    showError('Failed to delete payload')
+    console.error('Failed to delete extension:', error)
+    showError('Failed to delete extension')
   }
 }
 
 const closeModal = () => {
   showModal.value = false
-  editingPayload.value = null
-  currentPayload.value = {
+  editingExtension.value = null
+  currentExtension.value = {
     name: '',
     description: '',
     code: '',
@@ -368,7 +364,7 @@ const formatDate = (date: string) => {
 
 // Mounted
 onMounted(async () => {
-  await loadPayloads()
+  await loadExtensions()
 })
 </script>
 
@@ -394,7 +390,7 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
-.payload-code-editor {
+.extension-code-editor {
   :deep(.cm-editor) {
     min-height: 400px;
     max-height: 60vh;
@@ -454,57 +450,82 @@ onMounted(async () => {
 }
 
 /* Column width distribution */
-.payload-name {
+.extension-name {
   min-width: 150px;
   max-width: 200px;
   word-wrap: break-word;
   white-space: normal;
 }
 
-.payload-description {
+.extension-description {
   min-width: 200px;
   word-wrap: break-word;
   white-space: normal;
   line-height: 1.4;
 }
 
-.payload-status {
+.extension-status {
   width: 100px;
   text-align: center;
   white-space: nowrap;
 }
 
-.payload-date {
+.extension-date {
   width: 140px;
   white-space: nowrap;
 }
 
-.payload-actions {
+.extension-actions {
   width: 150px;
   white-space: nowrap;
   text-align: right;
 }
 
 /* Ensure buttons stay in a row */
-.payload-actions button {
+.extension-actions button {
   display: inline-block;
   margin-right: 5px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .table-wrapper {
-    margin: 0 -15px; /* Extend to card edges on mobile */
-    padding: 0 15px;
+.extension-actions .btn {
+  margin-right: 5px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.extension-actions .btn:last-child {
+  margin-right: 0;
+}
+
+/* Mobile extension card uses the mobile-card mixin from mobile-responsive */
+.mobile-extension-card {
+  @include mobile-card;
+}
+
+/* Apply responsive modal adjustments */
+:deep(.modal) {
+  @include responsive-modal;
+}
+
+/* Apply responsive table styles */
+@include responsive-table;
+
+/* Additional ExtensionConsole-specific mobile styles */
+@media (max-width: $tablet) {
+  .card-header h4 {
+    font-size: 1.25rem;
   }
   
-  .table {
-    font-size: 0.875rem; /* Slightly smaller text on mobile */
-  }
-  
-  .payload-actions button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+  .mobile-extension-card .btn-group .btn {
+    padding: 0.5rem;
+    
+    span {
+      display: none !important;
+    }
+    
+    i {
+      margin-right: 0;
+    }
   }
 }
 
@@ -577,8 +598,8 @@ onMounted(async () => {
   }
 }
 
-/* Use mobile card mixin for payload cards */
-.mobile-payload-card {
+/* Use mobile card mixin for extension cards */
+.mobile-extension-card {
   @include mobile-card;
 }
 

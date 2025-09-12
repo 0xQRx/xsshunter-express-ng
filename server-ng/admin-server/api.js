@@ -22,7 +22,7 @@ const authRoutes = require('./routes/auth.js');
 const firesRoutes = require('./routes/fires.js');
 const pagesRoutes = require('./routes/pages.js');
 const settingsRoutes = require('./routes/settings.js');
-const payloadsRoutes = require('./routes/payloads.js');
+const extensionsRoutes = require('./routes/extensions.js');
 const injectionRoutes = require('./routes/injection.js');
 const screenshotsRoutes = require('./routes/screenshots.js');
 
@@ -69,7 +69,7 @@ async function set_up_api_server(app) {
     app.use(constants.API_BASE_PATH + 'payloadfires', firesRoutes);
     app.use(constants.API_BASE_PATH + 'collected_pages', pagesRoutes);
     app.use(constants.API_BASE_PATH + 'settings', settingsRoutes);
-    app.use(constants.API_BASE_PATH + 'payloads', payloadsRoutes);
+    app.use(constants.API_BASE_PATH + 'extensions', extensionsRoutes);
     app.use(constants.API_BASE_PATH, injectionRoutes);
     
     // Screenshot route (not under API path, matches original)

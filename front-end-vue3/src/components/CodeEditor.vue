@@ -107,8 +107,8 @@ watch(() => props.modelValue, (newValue) => {
   }
 }
 
-// Fixed height for modal editors (PayloadConsole)
-.payload-code-editor {
+// Fixed height for modal editors (ExtensionConsole)
+.extension-code-editor {
   .cm-editor {
     height: 400px !important;
   }

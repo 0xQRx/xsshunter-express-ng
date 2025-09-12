@@ -132,7 +132,7 @@ const UpdateConfigSchema = {
     }
 };
 
-const CreatePayloadSchema = {
+const CreateExtensionSchema = {
     type: 'object',
     properties: {
         name: {
@@ -182,7 +182,7 @@ const CreatePayloadSchema = {
     }
 };
 
-const UpdatePayloadSchema = {
+const UpdateExtensionSchema = {
     type: 'object',
     properties: {
         name: {
@@ -237,6 +237,6 @@ module.exports = {
     DeleteCollectedPagesSchema,
     RecordCorrelatedRequestSchema,
     UpdateConfigSchema,
-    CreatePayloadSchema,
-    UpdatePayloadSchema,
+    CreateExtensionSchema,
+    UpdateExtensionSchema,
 };

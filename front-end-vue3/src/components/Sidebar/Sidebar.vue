@@ -24,7 +24,7 @@
         />
         <SidebarLink
           to="/console"
-          name="Payload Console"
+          name="Extension Console"
           icon="fas fa-terminal"
         />
         <SidebarLink

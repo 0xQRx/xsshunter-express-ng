@@ -431,12 +431,12 @@ code {
   font-size: 13px;
 }
 
-// Fixed height for modal editors (PayloadConsole)
-.payload-code-editor .CodeMirror {
+// Fixed height for modal editors (ExtensionConsole)
+.extension-code-editor .CodeMirror {
   height: 400px !important;
 }
 
-.payload-code-editor .CodeMirror-scroll {
+.extension-code-editor .CodeMirror-scroll {
   height: 100% !important;
   overflow-y: auto !important;
 }
