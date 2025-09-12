@@ -10,58 +10,63 @@
                 ({{ formatWithCommas(reportCount) }} Total)
               </h1>
               <hr />
-              <div v-for="report in payloadFireReports" :key="report.id">
-                <Card class="mb-0">
-                  <p class="text-right text-muted mb-1" style="font-size: 0.9em;">
-                    <i>UUID: {{ report.id }}</i>
-                  </p>
-                  <div class="mb-2">
-                    <div v-if="!imageErrors[report.screenshot_id]" class="screenshot-image-container">
-                      <a
-                        :href="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
-                        target="_blank"
-                      >
+              
+              <!-- Card Grid Layout -->
+              <div class="payload-cards-grid">
+                <div v-for="report in payloadFireReports" :key="report.id" class="payload-card-wrapper">
+                  <Card class="payload-card">
+                    <!-- Screenshot Section -->
+                    <div class="card-screenshot">
+                      <div v-if="!imageErrors[report.screenshot_id]" class="screenshot-container">
                         <img
-                          class="card-img-top report-image"
                           :src="`${baseApiPath}/screenshots/${report.screenshot_id}.png`"
                           alt="XSS Screenshot"
                           @error="handleImageError(report.screenshot_id)"
                           @load="handleImageLoad($event, report.screenshot_id)"
+                          @click="openReportModal(report)"
                         />
-                      </a>
+                      </div>
+                      <div v-else class="screenshot-placeholder-grid" @click="openReportModal(report)">
+                        <i class="fas fa-image fa-2x"></i>
+                        <small>No screenshot</small>
+                      </div>
+                      
+                      <!-- Time Badge -->
+                      <div class="time-badge">
+                        {{ formatTimeAgo(report.createdAt) }}
+                      </div>
                     </div>
-                    <div v-else class="screenshot-placeholder">
-                      <i class="fas fa-image fa-2x mb-2"></i>
-                      <p>Screenshot not available</p>
-                      <small class="text-muted">Likely a single-page app (React/Vue/Angular)</small>
+                    
+                    <!-- Card Content -->
+                    <div class="card-content">
+                      <div class="url-section">
+                        <code class="url-text">{{ truncateUrl(report.url, 50) }}</code>
+                      </div>
+                      
+                      <!-- Action Buttons -->
+                      <div class="card-actions">
+                        <BaseButton
+                          class="view-btn"
+                          simple
+                          type="primary"
+                          size="sm"
+                          @click="openReportModal(report)"
+                        >
+                          <i class="fas fa-eye"></i> View
+                        </BaseButton>
+                        <BaseButton
+                          class="delete-btn"
+                          simple
+                          type="danger"
+                          size="sm"
+                          @click="deletePayloadFire(report.id)"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </BaseButton>
+                      </div>
                     </div>
-                  </div>
-                  <h4 class="card-title">
-                    <code>{{ report.url }}</code>
-                  </h4>
-                  <p class="card-text text-right">
-                    <i>Fired {{ formatTimeAgo(report.createdAt) }}</i>
-                  </p>
-                  <div class="mt-3 button-full">
-                    <BaseButton
-                      class="m-0 btn-fill hide-mobile-text"
-                      simple
-                      type="primary"
-                      @click="openReportModal(report)"
-                    >
-                      <i class="fas fa-search"></i> <span>View Details</span>
-                    </BaseButton>
-                    <BaseButton
-                      class="ml-2 w-25 delete-button"
-                      simple
-                      type="danger"
-                      @click="deletePayloadFire(report.id)"
-                    >
-                      <i class="fas fa-trash-alt"></i>
-                    </BaseButton>
-                  </div>
-                </Card>
-                <hr />
+                  </Card>
+                </div>
               </div>
               
               <!-- Pagination -->
@@ -366,7 +371,7 @@ dayjs.extend(relativeTime)
 const loading = ref(false)
 const baseApiPath = ref('')
 const page = ref(1)
-const limit = 5
+const limit = 6  // Changed to 6 for better grid layout
 const showReportModal = ref(false)
 const selectedReport = ref<any>(null)
 const payloadFireReports = ref<any[]>([])
@@ -462,6 +467,12 @@ const handleImageLoad = (event: Event, screenshotId: string) => {
     // Image loaded successfully
     delete imageErrors.value[screenshotId]
   }
+}
+
+const truncateUrl = (url: string, maxLength: number = 50) => {
+  if (!url) return 'No URL'
+  if (url.length <= maxLength) return url
+  return url.substring(0, maxLength) + '...'
 }
 
 // Watch
@@ -772,6 +783,167 @@ hr {
   hr {
     border-color: rgba(255, 255, 255, 0.1);
     margin: 1.5rem 0;
+  }
+}
+
+// Card Grid Styles
+.payload-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+  
+  @media (max-width: $tablet) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  
+  @media (max-width: $mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payload-card {
+  background: $card-black-background;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    border-color: rgba($primary, 0.4);
+  }
+  
+  .card-screenshot {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(to bottom, #0d1117 0%, #161b22 100%);
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
+    .screenshot-container {
+      width: 100%;
+      height: 100%;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+    
+    .screenshot-placeholder-grid {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%);
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.08) 100%);
+        color: rgba(255, 255, 255, 0.5);
+      }
+      
+      i {
+        margin-bottom: 0.5rem;
+      }
+      
+      small {
+        font-size: 0.75rem;
+      }
+    }
+    
+    .time-badge {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba($card-black-background, 0.95);
+      backdrop-filter: blur(10px);
+      color: $opacity-8;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid rgba($primary, 0.3);
+    }
+  }
+  
+  .card-content {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    
+    .url-section {
+      flex: 1;
+      margin-bottom: 1rem;
+      
+      .url-text {
+        display: block;
+        font-size: 0.85rem;
+        color: $info;
+        word-break: break-all;
+        line-height: 1.4;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        border: none;
+        opacity: 0.9;
+      }
+    }
+    
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      
+      .view-btn {
+        flex: 1;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        background: transparent;
+        border: 1px solid rgba($primary, 0.5);
+        color: $primary;
+        
+        &:hover {
+          background: rgba($primary, 0.1);
+          border-color: $primary;
+        }
+        
+        i {
+          margin-right: 0.25rem;
+        }
+      }
+      
+      .delete-btn {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: 1px solid rgba($danger, 0.5);
+        color: $danger;
+        
+        &:hover {
+          background: rgba($danger, 0.1);
+          border-color: $danger;
+        }
+      }
+    }
   }
 }
 
