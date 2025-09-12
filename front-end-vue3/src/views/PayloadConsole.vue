@@ -21,32 +21,33 @@
               <p>No payloads created yet. Click "New Payload" to get started!</p>
             </div>
             
-            <div v-else class="table-wrapper">
+            <!-- Desktop Table View -->
+            <div v-else class="table-wrapper d-none d-md-block">
               <table class="table">
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Description</th>
+                    <th class="d-none d-lg-table-cell">Description</th>
                     <th>Status</th>
-                    <th>Created</th>
+                    <th class="d-none d-xl-table-cell">Created</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="payload in payloads" :key="payload.id">
                     <td class="payload-name">{{ payload.name }}</td>
-                    <td class="payload-description">{{ payload.description || 'No description' }}</td>
+                    <td class="payload-description d-none d-lg-table-cell">{{ payload.description || 'No description' }}</td>
                     <td class="payload-status">
                       <span :class="['badge', payload.is_active ? 'badge-success' : 'badge-secondary']">
                         {{ payload.is_active ? 'Active' : 'Inactive' }}
                       </span>
                     </td>
-                    <td class="payload-date">{{ formatDate(payload.created_at) }}</td>
+                    <td class="payload-date d-none d-xl-table-cell">{{ formatDate(payload.created_at) }}</td>
                     <td class="payload-actions">
-                      <button @click="editPayload(payload)" class="btn btn-sm btn-info mr-2" title="Edit">
+                      <button @click="editPayload(payload)" class="btn btn-sm btn-info mr-1" title="Edit">
                         <i class="fa fa-edit"></i>
                       </button>
-                      <button @click="togglePayloadStatus(payload)" :class="['btn', 'btn-sm', 'mr-2', payload.is_active ? 'btn-warning' : 'btn-success']" :title="payload.is_active ? 'Deactivate' : 'Activate'">
+                      <button @click="togglePayloadStatus(payload)" :class="['btn', 'btn-sm', 'mr-1', payload.is_active ? 'btn-warning' : 'btn-success']" :title="payload.is_active ? 'Deactivate' : 'Activate'">
                         <i :class="['fa', payload.is_active ? 'fa-pause' : 'fa-play']"></i>
                       </button>
                       <button @click="deletePayload(payload)" class="btn btn-sm btn-danger" title="Delete">
@@ -56,6 +57,39 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+            
+            <!-- Mobile Card View -->
+            <div v-if="payloads.length > 0" class="d-block d-md-none mobile-payload-list">
+              <div v-for="payload in payloads" :key="payload.id" class="mobile-payload-card">
+                <div class="card-header">
+                  <h5 class="mb-0">{{ payload.name }}</h5>
+                  <span :class="['badge', payload.is_active ? 'badge-success' : 'badge-secondary']">
+                    {{ payload.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <p class="text-muted small mb-2" v-if="payload.description">
+                    {{ payload.description }}
+                  </p>
+                  <p class="text-muted small mb-3">
+                    <i class="fa fa-clock-o"></i> {{ formatDate(payload.created_at) }}
+                  </p>
+                  <div class="btn-group w-100" role="group">
+                    <button @click="editPayload(payload)" class="btn btn-info" title="Edit">
+                      <i class="fa fa-edit"></i>
+                      <span class="d-none d-sm-inline"> Edit</span>
+                    </button>
+                    <button @click="togglePayloadStatus(payload)" :class="['btn', payload.is_active ? 'btn-warning' : 'btn-success']" :title="payload.is_active ? 'Deactivate' : 'Activate'">
+                      <i :class="['fa', payload.is_active ? 'fa-pause' : 'fa-play']"></i>
+                      <span class="d-none d-sm-inline"> {{ payload.is_active ? 'Pause' : 'Play' }}</span>
+                    </button>
+                    <button @click="deletePayload(payload)" class="btn btn-danger" title="Delete">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
@@ -339,6 +373,7 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/sass/mobile-responsive';
 /* Custom modal sizes - make xl even larger */
 :deep(.modal-xl) {
   max-width: 95%;
@@ -539,6 +574,31 @@ onMounted(async () => {
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     content: "";
+  }
+}
+
+/* Use mobile card mixin for payload cards */
+.mobile-payload-card {
+  @include mobile-card;
+}
+
+/* Apply responsive modal adjustments */
+:deep(.modal) {
+  @include responsive-modal;
+}
+
+/* Apply responsive table styles */
+@include responsive-table;
+
+/* Additional PayloadConsole-specific mobile styles */
+@media (max-width: $tablet) {
+  .card-header h4 {
+    font-size: 1.25rem;
+  }
+  
+  .btn-test-payloads {
+    width: 100%;
+    margin-top: 0.5rem;
   }
 }
 </style>
