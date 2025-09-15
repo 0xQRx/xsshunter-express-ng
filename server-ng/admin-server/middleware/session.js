@@ -51,7 +51,35 @@ async function initializeSessionMiddleware() {
     return session_wrapper_function;
 }
 
+/**
+ * Reinitialize session middleware with new secret
+ * This is called when the session secret is rotated
+ */
+async function reinitializeSessionMiddleware() {
+    // Check for existing session secret value
+    const session_secret_setting = await Settings.findOne({
+        where: {
+            key: constants.session_secret_key
+        }
+    });
+
+    if (!session_secret_setting) {
+        console.error(`No session secret is set during reinitialize!`);
+        throw new Error('NO_SESSION_SECRET_SET');
+    }
+
+    const updated_session_settings = {
+        ...sessions_settings_object,
+        ...{
+            secret: session_secret_setting.value
+        }
+    };
+    
+    sessions_middleware = sessions(updated_session_settings);
+}
+
 module.exports = {
     initializeSessionMiddleware,
+    reinitializeSessionMiddleware,
     session_wrapper_function,
 };

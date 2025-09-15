@@ -12,6 +12,7 @@ const update_settings_value = database.update_settings_value;
 const constants = require('../../shared/constants.js');
 const { UpdateConfigSchema } = require('../middleware/validation');
 const { get_hashed_password, get_secure_random_string } = require('../../shared/utils/crypto-utils.js');
+const { reinitializeSessionMiddleware } = require('../middleware/session.js');
 
 /**
  * GET /api/v1/settings
@@ -101,7 +102,7 @@ router.put('/', validate({ body: UpdateConfigSchema }), async (req, res) => {
     }
 
     if(req.body.correlation_api_key === true) {
-        const correlation_api_key = get_secure_random_string();
+        const correlation_api_key = get_secure_random_string(64);
         await update_settings_value(
             constants.CORRELATION_API_SECRET_SETTINGS_KEY,
             correlation_api_key
@@ -135,6 +136,8 @@ router.put('/', validate({ body: UpdateConfigSchema }), async (req, res) => {
             constants.session_secret_key,
             new_session_secret
         );
+        // Reinitialize the session middleware with the new secret
+        await reinitializeSessionMiddleware();
     }
 
     if(req.body.pages_to_collect !== undefined) {
