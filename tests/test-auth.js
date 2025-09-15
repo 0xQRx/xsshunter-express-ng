@@ -17,7 +17,6 @@ const routes_to_test = [
     { path: '/api/v1/auth-check', should_require_auth: false },
     { path: '/api/v1/login', should_require_auth: false },
     { path: '/api/v1/record_injection', should_require_auth: false }, // Uses API key auth
-    { path: '/health', should_require_auth: false },
 ];
 
 console.log('Authentication Test Results:');

@@ -51,10 +51,14 @@ router.post('/record_injection', validate({ body: RecordCorrelatedRequestSchema 
             }).end();
             return;
         }
+        // Log error in development, but don't expose details to client
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[Injection Route] Database error:', e);
+        }
         res.status(200).json({
             "success": false,
             "error": "An unexpected error occurred.",
-            "code": e.name.toString(),
+            "code": "DATABASE_ERROR"
         }).end();
         return;
     }

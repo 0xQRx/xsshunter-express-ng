@@ -16,7 +16,8 @@ const sessions_settings_object = {
     activeDuration: config.session.activeDuration,
     cookie: {
         httpOnly: true,
-        secure: !config.isDevelopment && config.security.cookieSecure
+        secure: !config.isDevelopment && config.security.cookieSecure,
+        sameSite: 'strict'
     }
 };
 

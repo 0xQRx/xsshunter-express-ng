@@ -52,27 +52,7 @@ async function get_app_server() {
     });
 
     // Screenshot endpoint removed - now handled by routes/screenshots.js with proper authentication
-
-    // Health check endpoint
-    app.get('/health', async (req, res) => {
-        const correlation_id_setting = await Settings.findOne({
-            where: {
-                key: constants.CORRELATION_API_SECRET_SETTINGS_KEY
-            }
-        });
-
-        if(correlation_id_setting === null){
-            return res.status(200).json({
-                "online": true,
-                "secret_configured": false,
-            }).end();
-        }
-
-        return res.status(200).json({
-            "online": true,
-            "secret_configured": true,
-        }).end();
-    });
+    // Health endpoint removed - exposed configuration details without authentication
 
     // Test endpoint for payload console - no CSP restrictions
     app.post('/test-payload', async (req, res) => {

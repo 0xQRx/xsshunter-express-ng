@@ -170,11 +170,17 @@ async function get_app_server() {
             res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
             res.set("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
             res.set("Access-Control-Max-Age", "86400");
-            
-            console.error(`[Validation Error] ${req.path}:`, error.validations);
+
+            // Log validation errors safely
+            if (config.isDevelopment) {
+                console.error(`[Validation Error] ${req.path}:`, error.validations);
+            } else {
+                console.error(`[Validation Error] ${req.path}: Validation failed`);
+            }
+
             res.status(400).json({
                 error: "Invalid request data",
-                details: error.validations
+                details: config.isDevelopment ? error.validations : undefined
             });
             return;
         }

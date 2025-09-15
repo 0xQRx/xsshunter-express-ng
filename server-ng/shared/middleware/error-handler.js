@@ -1,6 +1,6 @@
 /**
- * Centralized error handling middleware
- * Provides consistent error responses across both servers
+ * Centralized error handling middleware and utilities
+ * Provides consistent error responses and logging across both servers
  */
 
 const config = require('../config');
@@ -10,12 +10,12 @@ const config = require('../config');
  * Should be added last in the middleware chain
  */
 function errorHandler(err, req, res, next) {
-    // Log the error
+    // Log the error (sanitized in production)
     console.error('[Error Handler]', {
         timestamp: new Date().toISOString(),
         method: req.method,
         path: req.path,
-        error: err.message,
+        error: config.isDevelopment ? err.message : `${err.name || 'Error'} occurred`,
         stack: config.isDevelopment ? err.stack : undefined
     });
     
@@ -125,8 +125,63 @@ function notFoundHandler(req, res, next) {
     });
 }
 
+/**
+ * Log error safely (sanitized in production)
+ * @param {string} context - Where the error occurred
+ * @param {Error} error - The error object
+ */
+function logError(context, error) {
+    if (config.isDevelopment) {
+        console.error(`[${context}]`, error);
+    } else {
+        // In production, only log error type without sensitive details
+        console.error(`[${context}]`, {
+            type: error.name || 'Error',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+/**
+ * Get safe error message for client response
+ * @param {Error} error - The error object
+ * @param {string} defaultMessage - Default message to use in production
+ * @returns {string} - Safe error message
+ */
+function getSafeErrorMessage(error, defaultMessage = 'An error occurred') {
+    if (config.isDevelopment) {
+        return error.message;
+    }
+    return defaultMessage;
+}
+
+/**
+ * Create safe error response
+ * @param {number} statusCode - HTTP status code
+ * @param {string} message - Error message
+ * @param {string} code - Error code
+ * @param {object} details - Additional details (only in development)
+ * @returns {object} - Safe error response object
+ */
+function createErrorResponse(statusCode, message, code, details = null) {
+    const response = {
+        error: message,
+        code: code
+    };
+
+    // Only include details in development
+    if (config.isDevelopment && details) {
+        response.details = details;
+    }
+
+    return response;
+}
+
 module.exports = {
     errorHandler,
     asyncWrapper,
-    notFoundHandler
+    notFoundHandler,
+    logError,
+    getSafeErrorMessage,
+    createErrorResponse
 };

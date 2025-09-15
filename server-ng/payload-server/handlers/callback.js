@@ -15,6 +15,7 @@ const InjectionRequests = database.InjectionRequests;
 const ProbeTokens = database.ProbeTokens;
 const notification = require('../../shared/utils/notification.js');
 const { validateProbeData } = require('../../shared/utils/validation.js');
+const { logError } = require('../../shared/middleware/error-handler.js');
 
 const SCREENSHOTS_DIR = path.resolve(config.storage.screenshotsDir);
 
@@ -85,7 +86,7 @@ async function handleJSCallback(req, res) {
                     injection_data.injection_timestamp = injection_request.createdAt;
                 }
             } catch (error) {
-                console.error("Error retrieving injection for key", error);
+                logError("Callback - Injection retrieval", error);
             }
         }
 
@@ -94,7 +95,7 @@ async function handleJSCallback(req, res) {
 
         // Reject if validation failed
         if (!validationResult.valid) {
-            console.error('[Callback Handler] Validation failed:', validationResult.errors);
+            logError('Callback - Validation', { errors: validationResult.errors });
             // Clean up uploaded file if exists
             if (req.file && req.file.path) {
                 asyncfs.unlink(req.file.path).catch(err =>
@@ -192,7 +193,7 @@ async function handleJSCallback(req, res) {
         }).end();
 
     } catch (error) {
-        console.error('[js_callback] Error processing callback:', error);
+        logError('js_callback', error);
         // Ensure we don't leave the response hanging
         if (!res.headersSent) {
             res.status(500).json({ error: "Internal server error" }).end();

@@ -7,6 +7,7 @@ const database = require('../../shared/database.js');
 const ProbeTokens = database.ProbeTokens;
 const PayloadFireResults = database.PayloadFireResults;
 const { validateJSON } = require('../../shared/utils/validation.js');
+const { logError } = require('../../shared/middleware/error-handler.js');
 
 /**
  * Handle background data callback
@@ -118,7 +119,7 @@ async function handleBackgroundCallback(req, res) {
         }).end();
         
     } catch (error) {
-        console.error('[Background callback] Error:', error);
+        logError('Background callback', error);
         res.status(500).json({ error: "Internal server error" });
     }
 }

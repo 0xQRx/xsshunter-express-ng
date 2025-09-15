@@ -12,6 +12,7 @@ const constants = require('../../shared/constants.js');
 const Settings = database.Settings;
 const ProbeTokens = database.ProbeTokens;
 const Extensions = database.Extensions;
+const { logError } = require('../../shared/middleware/error-handler.js');
 
 // Load XSS payload from file into memory
 const XSS_PAYLOAD = fs.readFileSync(
@@ -64,14 +65,14 @@ async function serveProbe(req, res) {
             } catch (error) {
                 attempts++;
                 if (attempts >= 3) {
-                    console.error('[Probe Handler] Failed to create probe token after 3 attempts');
+                    logError('Probe Handler - Token creation', new Error('Failed after 3 attempts'));
                     // Continue without probe secret
                     probe_secret = '';
                 }
             }
         }
     } catch (error) {
-        console.error('[Probe Handler] Error creating probe token:', error);
+        logError('Probe Handler - Token creation', error);
         probe_secret = '';
     }
     
@@ -133,7 +134,7 @@ async function serveProbe(req, res) {
             JSON.stringify(active_extensions)
         ));
     } catch (error) {
-        console.error('[Probe Handler] Error fetching configuration:', error);
+        logError('Probe Handler - Configuration fetch', error);
         // Send basic payload with empty replacements
         res.send(XSS_PAYLOAD.replace(
             /\[HOST_URL\]/g,

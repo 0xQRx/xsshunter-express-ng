@@ -7,6 +7,7 @@ const database = require('../../shared/database.js');
 const ProbeTokens = database.ProbeTokens;
 const CollectedPages = database.CollectedPages;
 const { ensureString } = require('../../shared/utils/validation.js');
+const { logError } = require('../../shared/middleware/error-handler.js');
 
 /**
  * Handle page collection callback
@@ -74,7 +75,7 @@ async function handlePageCallback(req, res) {
         }).end();
         
     } catch (error) {
-        console.error('[Page callback] Error:', error);
+        logError('Page callback', error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
