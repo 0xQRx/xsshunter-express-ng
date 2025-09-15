@@ -90,6 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import DOMPurify from 'dompurify'
 import Card from '@/components/Cards/Card.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BasePagination from '@/components/BasePagination.vue'
@@ -137,14 +138,36 @@ const pullCollectedPages = async () => {
 const viewHtmlInNewTab = (inputHtml: string) => {
   const newWindow = window.open('about:blank', '_blank')
   if (newWindow) {
-    newWindow.document.write(inputHtml)
+    // Sanitize HTML to prevent XSS attacks while preserving safe HTML structure
+    const sanitizedHtml = DOMPurify.sanitize(inputHtml, {
+      WHOLE_DOCUMENT: true,
+      RETURN_DOM: false,
+      RETURN_DOM_FRAGMENT: false,
+      FORCE_BODY: false,
+      ADD_TAGS: ['link', 'style'],
+      ADD_ATTR: ['target', 'rel'],
+      ALLOW_DATA_ATTR: true,
+      ALLOW_UNKNOWN_PROTOCOLS: false
+    })
+    newWindow.document.write(sanitizedHtml)
     newWindow.document.close()
   }
 }
 
 const downloadHtml = (inputHtml: string) => {
+  // Sanitize HTML before creating download link
+  const sanitizedHtml = DOMPurify.sanitize(inputHtml, {
+    WHOLE_DOCUMENT: true,
+    RETURN_DOM: false,
+    RETURN_DOM_FRAGMENT: false,
+    FORCE_BODY: false,
+    ADD_TAGS: ['link', 'style'],
+    ADD_ATTR: ['target', 'rel'],
+    ALLOW_DATA_ATTR: true,
+    ALLOW_UNKNOWN_PROTOCOLS: false
+  })
   const link = document.createElement('a')
-  link.href = `data:text/html,${inputHtml}`
+  link.href = `data:text/html,${encodeURIComponent(sanitizedHtml)}`
   link.download = 'xss-page-contents.html'
   link.click()
 }
