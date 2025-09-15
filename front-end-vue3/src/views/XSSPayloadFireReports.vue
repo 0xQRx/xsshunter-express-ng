@@ -102,17 +102,30 @@
       @close="closeReportModal"
     >
       <template #header>
-        <h4 class="modal-title" v-if="selectedReport">
-          <i class="fas fa-fire"></i> XSS Report Details
-        </h4>
-        <p class="mb-0" style="font-size: 14px;">
-          <code style="color: #5dade2;">{{ selectedReport?.url }}</code>
-        </p>
+        <div class="d-flex justify-content-between align-items-start w-100">
+          <div>
+            <h4 class="modal-title" v-if="selectedReport">
+              <i class="fas fa-fire"></i> XSS Report Details
+            </h4>
+            <p class="mb-0" style="font-size: 14px;">
+              <code style="color: #5dade2;">{{ selectedReport?.url }}</code>
+            </p>
+          </div>
+          <BaseButton 
+            type="info" 
+            size="sm"
+            @click="compactView = !compactView"
+            style="margin-left: auto;"
+          >
+            <i :class="compactView ? 'fas fa-expand' : 'fas fa-compress'"></i>
+            {{ compactView ? 'Full View' : 'Compact View' }}
+          </BaseButton>
+        </div>
       </template>
       
-      <div v-if="selectedReport" class="report-modal-content">
+      <div v-if="selectedReport" class="report-modal-content" :class="{ 'compact-view': compactView }">
         <!-- Screenshot -->
-        <div class="report-section">
+        <div class="report-section" :class="{ 'compact-screenshot': compactView }">
           <p class="report-section-label">Screenshot</p>
           <small class="text-muted">Screenshot of the vulnerable page.</small>
           <div class="mt-2">
@@ -233,7 +246,7 @@
         <hr />
         
         <!-- Custom Scripts Data -->
-        <div v-if="parsedCustomData.length > 0" class="report-section custom-data-section">
+        <div v-if="parsedCustomData.length > 0 && !compactView" class="report-section custom-data-section">
           <p class="report-section-label">
             Custom Scripts Data 
             <span v-if="parsedCustomData.length > customDataPerPage" class="text-muted" style="font-size: 14px;">
@@ -327,7 +340,7 @@
         <hr />
         
         <!-- DOM HTML -->
-        <div class="report-section">
+        <div class="report-section" v-if="!compactView">
           <p class="report-section-label">DOM HTML</p>
           <small class="text-muted">HTML of the vulnerable page.</small>
           <div class="mt-2">
@@ -452,6 +465,7 @@ const payloadFireReports = ref<any[]>([])
 const reportCount = ref(0)
 const imageErrors = ref<Record<string, boolean>>({})
 const customDataPage = ref(1)
+const compactView = ref(false)  // Toggle for compact view
 const customDataPerPage = 3
 
 // Set loading handler
@@ -618,4 +632,66 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @import '@/assets/sass/views/xss-payload-fire-reports';
+
+// Compact view styles for better screenshots
+.compact-view {
+  .report-section {
+    padding: 8px 0;
+    margin-bottom: 8px;
+    
+    .report-section-label {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    
+    small.text-muted {
+      display: none; // Hide descriptions in compact view
+    }
+    
+    code {
+      font-size: 11px;
+      word-break: break-all;
+    }
+    
+    pre {
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+    
+    // Compact screenshot styling
+    &.compact-screenshot {
+      .screenshot-image-container {
+        max-width: 300px;
+        margin: 0 auto;
+        
+        img {
+          max-height: 200px;
+          object-fit: contain;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+      }
+      
+      .screenshot-placeholder {
+        max-width: 300px;
+        height: 150px;
+        margin: 0 auto;
+      }
+    }
+  }
+  
+  hr {
+    margin: 8px 0;
+  }
+}
+
+// Make modal more compact when in compact view
+.modal-black .modal-content {
+  &:has(.compact-view) {
+    .modal-body {
+      padding: 12px 20px;
+    }
+  }
+}
 </style>
