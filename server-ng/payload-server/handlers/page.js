@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const database = require('../../shared/database.js');
 const ProbeTokens = database.ProbeTokens;
 const CollectedPages = database.CollectedPages;
+const { ensureString } = require('../../shared/utils/validation.js');
 
 /**
  * Handle page collection callback
@@ -56,10 +57,11 @@ async function handlePageCallback(req, res) {
         });
 
         // Store the collected page with payload association
+        // Ensure uri and html are strings (no size limit enforced)
         const page_insert_response = await CollectedPages.create({
             id: uuidv4(),
-            uri: uri || '',
-            html: html || '',
+            uri: ensureString(uri),
+            html: ensureString(html),
             payload_fire_id: payload_id
         });
 

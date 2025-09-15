@@ -13,17 +13,6 @@ const crypto = require('crypto');
 // Check if we're in development mode
 const isDevelopment = process.env.DEV_MODE === 'true' || process.env.NODE_ENV === 'development';
 
-const SCREENSHOTS_DIR = path.resolve(process.env.SCREENSHOTS_DIR || '/tmp/xsshunter-screenshots');
-const SCREENSHOT_FILENAME_REGEX = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\.png$/i);
-
-async function check_file_exists(file_path) {
-    return asyncfs.access(file_path, fs.constants.F_OK).then(() => {
-        return true;
-    }).catch(() => {
-        return false;
-    });
-}
-
 function set_secure_headers(req, res) {
     res.set("X-XSS-Protection", "mode=block");
     res.set("X-Content-Type-Options", "nosniff");
@@ -62,34 +51,7 @@ async function get_app_server() {
         next();
     });
 
-    // Screenshot serving endpoint (admin only)
-    app.get('/screenshots/:screenshotFilename', async (req, res) => {
-        const screenshot_filename = req.params.screenshotFilename;
-
-        // Validate filename format
-        if(!SCREENSHOT_FILENAME_REGEX.test(screenshot_filename)) {
-            return res.sendStatus(404);
-        }
-
-        const gz_image_path = `${SCREENSHOTS_DIR}/${screenshot_filename}.gz`;
-        
-        const image_exists = await check_file_exists(gz_image_path);
-
-        if(!image_exists) {
-            return res.sendStatus(404);
-        }
-
-        // Return the gzipped image file
-        res.sendFile(gz_image_path, {
-            lastModified: false,
-            acceptRanges: false,
-            cacheControl: true,
-            headers: {
-                "Content-Type": "image/png",
-                "Content-Encoding": "gzip"
-            }
-        });
-    });
+    // Screenshot endpoint removed - now handled by routes/screenshots.js with proper authentication
 
     // Health check endpoint
     app.get('/health', async (req, res) => {

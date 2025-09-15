@@ -41,12 +41,15 @@ const requireAuth = async function(req, res, next) {
         constants.API_BASE_PATH + 'collected_pages',
         constants.API_BASE_PATH + 'settings',
         constants.API_BASE_PATH + 'payloads',
+        constants.API_BASE_PATH + 'extensions',
+        constants.API_BASE_PATH + 'generate-test-token',
+        '/screenshots/',
     ];
 
     // Check if the path being accessed requires authentication
     let requires_authentication = false;
     AUTHENTICATION_REQUIRED_ROUTES.forEach(authenticated_route => {
-        if(req.path.toLowerCase().startsWith(authenticated_route)) {
+        if(req.path.toLowerCase().startsWith(authenticated_route.toLowerCase())) {
             requires_authentication = true;
         }
     });

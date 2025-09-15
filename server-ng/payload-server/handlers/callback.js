@@ -14,6 +14,7 @@ const PayloadFireResults = database.PayloadFireResults;
 const InjectionRequests = database.InjectionRequests;
 const ProbeTokens = database.ProbeTokens;
 const notification = require('../../shared/utils/notification.js');
+const { validateProbeData } = require('../../shared/utils/validation.js');
 
 const SCREENSHOTS_DIR = path.resolve(config.storage.screenshotsDir);
 
@@ -88,29 +89,49 @@ async function handleJSCallback(req, res) {
             }
         }
 
+        // Validate and sanitize the payload data
+        const validationResult = validateProbeData(req.body);
+
+        // Reject if validation failed
+        if (!validationResult.valid) {
+            console.error('[Callback Handler] Validation failed:', validationResult.errors);
+            // Clean up uploaded file if exists
+            if (req.file && req.file.path) {
+                asyncfs.unlink(req.file.path).catch(err =>
+                    console.error('[Cleanup] Failed to delete temp file:', err)
+                );
+            }
+            return res.status(400).json({
+                error: "Invalid data format",
+                details: validationResult.errors
+            }).end();
+        }
+
+        const validatedData = validationResult.data;
+
         // Store the payload data
         const payload_fire_result = {
             id: payload_fire_id,
-            probe_secret: req.body.probe_secret,
-        url: req.body.uri || '',
-        ip_address: req.ip,
-        referer: req.body.referrer || '',
-        user_agent: req.body['user-agent'] || '',
-        cookies: req.body.cookies || '',
-        title: req.body.title || '',
-        dom: req.body.dom || '',
-        text: req.body.text || '',
-        origin: req.body.origin || '',
-        screenshot_id: payload_fire_id,
-        was_iframe: (req.body.was_iframe === 'true'),
-        injection_key: req.body.injection_key || 'default',
-        browser_timestamp: parseInt(req.body['browser-time']) || 0,
-        correlated_request: injection_data.request || 'No correlated request found for this payload',
-        probe_uid: req.body['probe-uid'] || '',
-        local_storage: req.body.localStorage || '[]',
-        session_storage: req.body.sessionStorage || '[]',
-        custom_data: req.body.custom_data || '[]'
-    };
+            probe_secret: validatedData.probe_secret,
+            url: validatedData.url,
+            ip_address: req.ip,
+            referer: validatedData.referer,
+            user_agent: validatedData.user_agent,
+            cookies: validatedData.cookies,
+            title: validatedData.title,
+            dom: validatedData.dom,
+            text: validatedData.text,
+            origin: validatedData.origin,
+            screenshot_id: payload_fire_id,
+            was_iframe: validatedData.was_iframe,
+            injection_key: validatedData.injection_key,
+            browser_timestamp: validatedData.browser_timestamp,
+            correlated_request: injection_data.request || 'No correlated request found for this payload',
+            probe_uid: validatedData.probe_uid,
+            local_storage: validatedData.local_storage,
+            session_storage: validatedData.session_storage,
+            custom_data: validatedData.custom_data
+        };
 
     // Handle screenshot upload if present (from multer upload.single('screenshot'))
     if (req.file) {

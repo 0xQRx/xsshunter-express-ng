@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const database = require('../../shared/database.js');
 const ProbeTokens = database.ProbeTokens;
 const PayloadFireResults = database.PayloadFireResults;
+const { validateJSON } = require('../../shared/utils/validation.js');
 
 /**
  * Handle background data callback
@@ -37,8 +38,24 @@ async function handleBackgroundCallback(req, res) {
             return res.status(400).json({ error: "Invalid session token format" });
         }
         
-        // Validate custom_data structure
-        if (!custom_data || typeof custom_data !== 'object') {
+        // Validate custom_data structure - ensure it's a valid JSON object
+        let validated_custom_data;
+        if (typeof custom_data === 'string') {
+            // If it's a string, validate it as JSON
+            const jsonValidation = validateJSON(custom_data, 'custom_data', null);
+            if (jsonValidation === null) {
+                console.error(`[Background callback] Invalid JSON in custom_data`);
+                return res.status(400).json({ error: "Invalid JSON in custom data" });
+            }
+            try {
+                validated_custom_data = JSON.parse(jsonValidation);
+            } catch (e) {
+                console.error(`[Background callback] Error parsing custom_data`);
+                return res.status(400).json({ error: "Invalid custom data format" });
+            }
+        } else if (custom_data && typeof custom_data === 'object') {
+            validated_custom_data = custom_data;
+        } else {
             console.error(`[Background callback] Invalid custom_data structure`);
             return res.status(400).json({ error: "Invalid custom data format" });
         }
@@ -80,7 +97,7 @@ async function handleBackgroundCallback(req, res) {
 
         // Add timestamp to the new data
         const timestamped_data = {
-            ...custom_data,
+            ...validated_custom_data,
             timestamp: new Date().toISOString()
         };
         

@@ -70,16 +70,7 @@ router.post('/record_injection', validate({ body: RecordCorrelatedRequestSchema 
  * Generate a test token for probe testing (authenticated)
  */
 router.post('/generate-test-token', async (req, res) => {
-    // Check authentication
-    if (!req.session.authenticated) {
-        res.status(401).json({
-            "success": false,
-            "error": "You must be authenticated to access this resource.",
-            "code": "NOT_AUTHENTICATED"
-        }).end();
-        return;
-    }
-
+    // Authentication is now handled by the requireAuth middleware
     try {
         // Generate a secure random token
         const crypto = require('crypto');
