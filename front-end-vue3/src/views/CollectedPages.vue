@@ -37,7 +37,7 @@
                           class="mt-3 ml-1 mr-1 hide-mobile-text"
                           @click="viewHtmlInNewTab(collectedPage.html)"
                         >
-                          <i class="fas fa-external-link-alt"></i> <span>View Raw HTML in New Tab</span>
+                          <i class="fas fa-external-link-alt"></i> <span>Render Page in New Tab</span>
                         </BaseButton>
                         <BaseButton
                           simple
@@ -137,7 +137,8 @@ const pullCollectedPages = async () => {
 const viewHtmlInNewTab = (inputHtml: string) => {
   const newWindow = window.open('about:blank', '_blank')
   if (newWindow) {
-    newWindow.document.body.innerText = inputHtml
+    newWindow.document.write(inputHtml)
+    newWindow.document.close()
   }
 }
 
