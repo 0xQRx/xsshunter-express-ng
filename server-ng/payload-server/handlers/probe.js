@@ -39,8 +39,8 @@ async function serveProbe(req, res) {
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Access-Control-Allow-Headers", "*");
     
-    // Extract probe_id from URL parameter (matches /:probe_id route)
-    const probe_id = req.params.probe_id || 'default';
+    // Extract injection_key from URL parameter (matches /:injection_key route)
+    const injection_key = req.params.injection_key || 'default';
     
     let probe_secret;
     try {
@@ -126,8 +126,8 @@ async function serveProbe(req, res) {
             '[PROBE_SECRET]',
             probe_secret
         ).replace(
-            '[PROBE_ID]',
-            JSON.stringify(probe_id)
+            '[INJECTION_KEY]',
+            JSON.stringify(injection_key)
         ).replace(
             '[CUSTOM_PAYLOADS_REPLACE_ME]',
             JSON.stringify(active_extensions)
@@ -148,7 +148,7 @@ async function serveProbe(req, res) {
             '[PROBE_SECRET]',
             probe_secret || ''
         ).replace(
-            '[PROBE_ID]',
+            '[INJECTION_KEY]',
             '"default"'
         ).replace(
             '[CUSTOM_PAYLOADS_REPLACE_ME]',

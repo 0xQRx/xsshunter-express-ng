@@ -150,6 +150,16 @@
         </div>
         <hr />
         
+        <!-- Injection Key -->
+        <div class="report-section">
+          <p class="report-section-label">Injection Key</p>
+          <small class="text-muted">Unique identifier used to track which injection attempt triggered this XSS.</small>
+          <div class="mt-2">
+            <code>{{ selectedReport.injection_key || 'default' }}</code>
+          </div>
+        </div>
+        <hr />
+        
         <!-- IP Address -->
         <div class="report-section">
           <p class="report-section-label">IP Address</p>

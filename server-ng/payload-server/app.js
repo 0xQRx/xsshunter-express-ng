@@ -217,7 +217,7 @@ async function get_app_server() {
 
     // Probe serving routes with bot protection
     app.get('/', guardAgainstBots, serveProbe);
-    app.get('/:probe_id', guardAgainstBots, serveProbe);
+    app.get('/:injection_key', guardAgainstBots, serveProbe);
 
     // Add error handlers (note: these go after all routes)
     // The notFoundHandler is not needed here since we have a catch-all route

@@ -305,7 +305,7 @@ try {
     probe_return_data['origin'] = '';
 }
 try {
-    probe_return_data['injection_key'] = [PROBE_ID];
+    probe_return_data['injection_key'] = [INJECTION_KEY];
 } catch ( e ) {
     probe_return_data['injection_key'] = '';
 }

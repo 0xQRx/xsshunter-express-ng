@@ -103,6 +103,7 @@ async function handleJSCallback(req, res) {
         origin: req.body.origin || '',
         screenshot_id: payload_fire_id,
         was_iframe: (req.body.was_iframe === 'true'),
+        injection_key: req.body.injection_key || 'default',
         browser_timestamp: parseInt(req.body['browser-time']) || 0,
         correlated_request: injection_data.request || 'No correlated request found for this payload',
         probe_uid: req.body['probe-uid'] || '',

@@ -146,6 +146,13 @@ PayloadFireResults.init({
 		allowNull: false,
 		unique: false
 	},
+	// Injection key used to correlate the XSS fire
+	// with the original injection attempt
+	injection_key: {
+		type: Sequelize.TEXT,
+		allowNull: true,
+		unique: false
+	},
 	// Timestamp as reported by the
 	// user's browser
 	browser_timestamp: {
