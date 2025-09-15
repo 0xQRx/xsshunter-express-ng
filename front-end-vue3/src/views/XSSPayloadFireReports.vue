@@ -102,12 +102,12 @@
       @close="closeReportModal"
     >
       <template #header>
-        <div class="d-flex justify-content-between align-items-start w-100">
-          <div>
+        <div class="modal-header-wrapper">
+          <div class="modal-header-content">
             <h4 class="modal-title" v-if="selectedReport">
               <i class="fas fa-fire"></i> XSS Report Details
             </h4>
-            <p class="mb-0" style="font-size: 14px;">
+            <p class="mb-0 modal-url" style="font-size: 14px;">
               <code style="color: #5dade2;">{{ selectedReport?.url }}</code>
             </p>
           </div>
@@ -115,10 +115,9 @@
             type="info" 
             size="sm"
             @click="compactView = !compactView"
-            style="margin-left: auto;"
+            class="compact-toggle-btn hide-mobile-text"
           >
-            <i :class="compactView ? 'fas fa-expand' : 'fas fa-compress'"></i>
-            {{ compactView ? 'Full View' : 'Compact View' }}
+            <i :class="compactView ? 'fas fa-expand' : 'fas fa-compress'"></i> <span>{{ compactView ? 'Full' : 'Compact' }}</span>
           </BaseButton>
         </div>
       </template>
@@ -632,6 +631,29 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @import '@/assets/sass/views/xss-payload-fire-reports';
+@import '@/assets/sass/mobile-responsive';
+
+// Modal header responsive layout
+.modal-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 12px;
+  
+  .modal-header-content {
+    flex: 1;
+    min-width: 0; // Allow content to shrink
+    
+    .modal-url {
+      word-break: break-all;
+    }
+  }
+  
+  .compact-toggle-btn {
+    flex-shrink: 0;
+  }
+}
 
 // Compact view styles for better screenshots
 .compact-view {
