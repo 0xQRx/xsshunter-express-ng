@@ -20,7 +20,7 @@ router.get('/auth-check', async (req, res) => {
     res.status(200).json({
         "success": true,
         "result": {
-            "is_authenticated": (req.session.authenticated == true)
+            "is_authenticated": (req.session.authenticated === true)
         }
     }).end();
 });
