@@ -1,4 +1,4 @@
-# XSS Hunter Express NG (Next Generation)
+# XSS Hunter Express NG
 ## *Enhanced XSS Detection Platform with Custom Extension Support*
 
 The next generation of XSS Hunter Express with powerful extension system, modern Vue 3 interface, and enhanced payload capabilities. Built upon the foundation of [XSS Hunter Express](https://github.com/mandatoryprogrammer/xsshunter-express) by mandatory (Matthew Bryant).
