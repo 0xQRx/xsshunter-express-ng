@@ -10,6 +10,7 @@ const path = require('path');
 const asyncfs = require('fs').promises;
 const database = require('../../shared/database.js');
 const config = require('../../shared/config.js');
+const constants = require('../../shared/constants.js');
 const PayloadFireResults = database.PayloadFireResults;
 const InjectionRequests = database.InjectionRequests;
 const ProbeTokens = database.ProbeTokens;
@@ -172,14 +173,26 @@ async function handleJSCallback(req, res) {
 
         // Send notifications independently so one failure doesn't block the other
         // Check if email notifications are enabled
-        if (process.env.SMTP_EMAIL_NOTIFICATIONS_ENABLED === 'true') {
+        const emailEnabled = process.env.SMTP_EMAIL_NOTIFICATIONS_ENABLED === 'true';
+        const emailAlertSetting = await database.Settings.findOne({
+            where: { key: constants.SEND_ALERT_EMAILS_KEY }
+        });
+        const shouldSendEmail = emailEnabled && (!emailAlertSetting || JSON.parse(emailAlertSetting.value) !== false);
+
+        if (shouldSendEmail) {
             notification.send_email_notification(payload_fire_result)
                 .then(() => console.log('[Notification] Email sent successfully'))
                 .catch(error => console.error('[Notification] Email failed:', error.message));
         }
-        
+
         // Check if Discord notifications are enabled
-        if (process.env.DISCORD_WEBHOOK_URL && process.env.DISCORD_WEBHOOK_URL.trim() !== '') {
+        const discordConfigured = process.env.DISCORD_WEBHOOK_URL && process.env.DISCORD_WEBHOOK_URL.trim() !== '';
+        const discordAlertSetting = await database.Settings.findOne({
+            where: { key: constants.SEND_DISCORD_ALERTS_KEY }
+        });
+        const shouldSendDiscord = discordConfigured && (!discordAlertSetting || JSON.parse(discordAlertSetting.value) !== false);
+
+        if (shouldSendDiscord) {
             notification.send_discord_notification(payload_fire_result)
                 .then(() => console.log('[Notification] Discord sent successfully'))
                 .catch(error => console.error('[Notification] Discord failed:', error.message));
