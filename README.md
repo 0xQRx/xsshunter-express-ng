@@ -207,26 +207,6 @@ Access:
 - Payload Server: http://localhost:3000
 - Admin: https://localhost:8443
 
-### Running Tests
-```bash
-cd tests
-./run-all-tests.sh
-```
-
-## 📦 Project Structure
-
-```
-xsshunter-express-ng/
-├── Docker/                # Docker configuration
-├── front-end-vue3/        # Vue 3 admin interface
-│   └── src/
-│       ├── views/         # Page components
-│       └── components/    # Including Extension Manager
-├── server-ng/             # Backend server
-│   ├── extensions/        # Extension system
-│   └── templates/         # Payload templates
-└── tests/                 # Test suite
-```
 
 ## 🤝 Credits
 
