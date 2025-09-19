@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "mandatory (Matthew Bryant)",
+  "author": "0xQRx. Original author: mandatory (Matthew Bryant)",
   "license": "MIT",
   "dependencies": {
     "@nvanexan/node-client-sessions": "^0.8.0",
