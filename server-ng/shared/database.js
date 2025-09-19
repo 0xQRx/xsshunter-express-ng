@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
 		host: process.env.DATABASE_HOST,
 		dialect: 'postgres',
 		benchmark: true,
-		logging: true
+		logging: process.env.DATABASE_LOGGING === 'false' ? false : (process.env.NODE_ENV !== 'production')
 	},
 );
 

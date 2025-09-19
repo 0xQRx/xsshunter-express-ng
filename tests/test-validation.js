@@ -126,7 +126,8 @@ test('Malformed localStorage JSON', () => {
         custom_data: '[]'
     };
     const result = validateProbeData(data);
-    if (result.local_storage !== '[]') throw new Error('Expected default [] for malformed JSON');
+    if (result.valid !== false) throw new Error('Expected validation to fail');
+    if (!result.errors.some(e => e.includes('localStorage'))) throw new Error('Expected localStorage error');
 });
 
 test('Invalid sessionStorage JSON', () => {
@@ -136,7 +137,8 @@ test('Invalid sessionStorage JSON', () => {
         custom_data: '[]'
     };
     const result = validateProbeData(data);
-    if (result.session_storage !== '[]') throw new Error('Expected default [] for invalid JSON');
+    if (result.valid !== false) throw new Error('Expected validation to fail');
+    if (!result.errors.some(e => e.includes('sessionStorage'))) throw new Error('Expected sessionStorage error');
 });
 
 test('Mixed valid and invalid data', () => {
@@ -150,14 +152,9 @@ test('Mixed valid and invalid data', () => {
         'browser-time': '1234567890'
     };
     const result = validateProbeData(data);
-
-    if (result.url !== 'https://example.com') throw new Error('URL not preserved');
-    if (result.user_agent !== 'Mozilla/5.0') throw new Error('User agent not preserved');
-    if (result.local_storage !== '{"valid":"json"}') throw new Error('Valid localStorage not preserved');
-    if (result.session_storage !== '[]') throw new Error('Invalid sessionStorage not defaulted');
-    if (result.custom_data !== '[1,2,3]') throw new Error('Valid custom_data not preserved');
-    if (result.was_iframe !== true) throw new Error('was_iframe not converted to boolean');
-    if (result.browser_timestamp !== 1234567890) throw new Error('browser_timestamp not converted to integer');
+    // Should reject due to invalid sessionStorage
+    if (result.valid !== false) throw new Error('Expected validation to fail');
+    if (!result.errors.some(e => e.includes('sessionStorage'))) throw new Error('Expected sessionStorage error');
 });
 
 test('Extremely large but valid data', () => {
@@ -165,14 +162,42 @@ test('Extremely large but valid data', () => {
     const data = {
         dom: largeString,
         cookies: largeString,
-        text: largeString
+        text: largeString,
+        localStorage: '[]',  // Add valid JSON fields
+        sessionStorage: '[]',
+        custom_data: '[]'
     };
     const result = validateProbeData(data);
 
-    // Should not truncate large fields
-    if (result.dom !== largeString) throw new Error('DOM field was truncated');
-    if (result.cookies !== largeString) throw new Error('Cookies field was truncated');
-    if (result.text !== largeString) throw new Error('Text field was truncated');
+    // Should accept and not truncate large fields
+    if (!result.valid) throw new Error('Validation should pass');
+    if (result.data.dom !== largeString) throw new Error('DOM field was truncated');
+    if (result.data.cookies !== largeString) throw new Error('Cookies field was truncated');
+    if (result.data.text !== largeString) throw new Error('Text field was truncated');
+});
+
+test('All valid data should pass', () => {
+    const data = {
+        uri: 'https://example.com',
+        'user-agent': 'Mozilla/5.0',
+        localStorage: '{"valid":"json"}',
+        sessionStorage: '{"also":"valid"}',
+        custom_data: '[1,2,3]',
+        was_iframe: 'true',
+        'browser-time': '1234567890',
+        cookies: 'session=abc123',
+        title: 'Test Page'
+    };
+    const result = validateProbeData(data);
+
+    if (!result.valid) throw new Error('Should accept all valid data');
+    if (result.data.url !== 'https://example.com') throw new Error('URL not preserved');
+    if (result.data.user_agent !== 'Mozilla/5.0') throw new Error('User agent not preserved');
+    if (result.data.local_storage !== '{"valid":"json"}') throw new Error('Valid localStorage not preserved');
+    if (result.data.session_storage !== '{"also":"valid"}') throw new Error('Valid sessionStorage not preserved');
+    if (result.data.custom_data !== '[1,2,3]') throw new Error('Valid custom_data not preserved');
+    if (result.data.was_iframe !== true) throw new Error('was_iframe not converted to boolean');
+    if (result.data.browser_timestamp !== 1234567890) throw new Error('browser_timestamp not converted to integer');
 });
 
 // Summary

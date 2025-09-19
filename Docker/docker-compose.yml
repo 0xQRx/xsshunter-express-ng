@@ -49,6 +49,9 @@ services:
       - DATABASE_PASSWORD=xsshunterexpress
       - DATABASE_HOST=postgresdb
       - NODE_ENV=production
+      # Database logging (set to 'false' to disable verbose database logs)
+      # Default: enabled in development, disabled in production
+      - DATABASE_LOGGING=false
     ports:
       - "80:80"
       - "443:443"

@@ -1,94 +1,244 @@
-# XSS Hunter Express
-## *Sets up in 5 minutes and requires no maintenance*
+# XSS Hunter Express NG (Next Generation)
+## *Enhanced XSS Detection Platform with Custom Extension Support*
 
-The fastest way to set up XSS Hunter to test and find blind cross-site scripting vulnerabilities.
+The next generation of XSS Hunter Express with powerful extension system, modern Vue 3 interface, and enhanced payload capabilities. Built upon the foundation of [XSS Hunter Express](https://github.com/mandatoryprogrammer/xsshunter-express) by mandatory (Matthew Bryant).
 
-## Setup (Five minutes, try not to skim too much)
+Repository: [https://github.com/0xQRx/xsshunter-express-ng](https://github.com/0xQRx/xsshunter-express-ng)
 
-### Requirements
-* `docker` and `docker-compose` installed
-* Host with at least 2 GB of RAM
-* A hostname (e.g. `host.example.com`) which you can map to your server's IP (have DNS control for)
-* *[For Email Notifications]* To receive email notifications of XSS payload fires you'll need an email account with valid SMTP credentials. You can use many regular email accounts like Gmail for this purpose. This is not required if you don't want email notifications.
+## 🚀 Key Enhancements
 
-### Configuring Your Instance
-To set up XSS Hunter Express, modify the [`docker-compose.yaml`](https://github.com/mandatoryprogrammer/xsshunter-express/blob/main/docker-compose.yml) file with your appropriate settings/passwords/etc.
+### Extension System (Major Feature)
+- **Custom Extension Panel**: Add unlimited custom JavaScript extensions to enhance XSS probe functionality
+- **Extension Management**: Enable/disable extensions on-the-fly through the admin panel
+- **Pre-built Extensions**: Sample extensions for common tasks (keylogger, form grabber, network scanner)
+- **Execution**: Extensions run within the victim's context for maximum data collection
 
-The following are some YAML fields (in [`docker-compose.yaml`](https://github.com/mandatoryprogrammer/xsshunter-express/blob/main/docker-compose.yml)) you'll need to modify before starting the service:
+### Modern Architecture
+- **Vue 3 Frontend**: Complete UI rebuild with modern Vue 3.5+ and Composition API
+- **Dual-Port Architecture**: Separation of payload collection (80/443) and admin panel (8443)
+- **Node.js 22 Support**: Updated for latest Node.js with maintained backward compatibility
+- **Discord Webhooks**: Real-time notifications to Discord channels
 
-* `HOSTNAME`: Set this field to your hostname you want to use for your payloads and to access the web admin panel. Often this is as short as possible (e.g. `xss.ht`) so the payload can be fit into various fields for testing. This hostname should be mapped to the IP address of your instance (via a DNS `A` record).
-* `SSL_CONTACT_EMAIL`: In order to automatically set up and renew TLS/SSL certificates via [Let's Encrypt](https://letsencrypt.org/) you'll need to provide an email address.
+## 📋 Requirements
 
-The following are needed if you want email notifications:
+* Docker and docker-compose
+* Host with at least 2 GB RAM
+* Domain name with DNS control
+* Ports 80, 443, and 8443 available
 
-* `SMTP_EMAIL_NOTIFICATIONS_ENABLED`: Leave enabled to receive email notifications (you must set this up via the below configurations as well).
-*  `SMTP_HOST`: The host of your SMTP server where your email account is hosted (e.g. `smtp.gmail.com`).
-* `SMTP_PORT`: The port of your SMTP server (e.g. `465`).
-* `SMTP_USE_TLS`: Utilize TLS if your SMTP server supports it.
-* `SMTP_USERNAME`: The username of the email account on your SMTP server (e.g. `exampleuser`).
-* `SMTP_PASSWORD`: The password of the email account on your SMTP server (e.g. `Password1!`).
-* `SMTP_FROM_EMAIL`: The email address of your email account on the SMTP server (e.g. `exampleuser@gmail.com`).
-* `SMTP_RECEIVER_EMAIL`: What email the notifications will be sent to. This may be the same as the above but could be different.
+## 🔧 Quick Setup
 
-Finally, the following is worth considering for the security conscious:
-
-* `CONTROL_PANEL_ENABLED`: If you want to minimize the attack surface of your instance you can disable the web control panel. This makes it so you'll only receive emails of payload fires (results will still be stored on disk and in the database).
-
-
-### Build & Start XSS Hunter Express
-
-Once you've set it up, simply run the following commands to set up the service:
-
+### 1. Clone Repository
 ```bash
-# Change into the repo directory
-cd xsshunter-express/
-# Start up postgres in the background
+git clone https://github.com/0xQRx/xsshunter-express-ng.git
+cd xsshunter-express-ng
+```
+
+### 2. Configure Settings
+Edit `Docker/docker-compose.yml`:
+
+```yaml
+# Required
+- HOSTNAME=your.domain.com
+- SSL_CONTACT_EMAIL=your@email.com
+
+# Optional - Email Notifications
+- SMTP_EMAIL_NOTIFICATIONS_ENABLED=true
+- SMTP_HOST=smtp.gmail.com
+- SMTP_PORT=465
+- SMTP_USERNAME=your@gmail.com
+- SMTP_PASSWORD=your_app_password
+- SMTP_FROM_EMAIL=your@gmail.com
+- SMTP_RECEIVER_EMAIL=alerts@email.com
+
+# Optional - Discord Notifications
+- DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK
+```
+
+### 3. Start Services
+```bash
+cd Docker/
 docker-compose up -d postgresdb
-# Start up the service
 docker-compose up xsshunterexpress
 ```
 
-Assuming all has gone well, you'll see an admin password printed onto your screen. Use this to log into the web panel now hosted at `https://your-hostname.com/admin/`.
+### 4. Initialize SSL Certificate
+**IMPORTANT**: After starting the service, navigate to:
+```
+https://your.domain.com
+```
+This triggers automatic SSL certificate generation via Let's Encrypt (takes ~15 seconds).
 
-**NOTE**: The very first HTTP request to your instance will be slow due to the fact that the service will automatically generate a TLS/SSL certificate. This should only take ~15 seconds.
+### 5. Access Admin Panel
+The admin password is **randomly generated** and displayed in the console output. Look for:
+```
+Password: XXXXXXXXXXXXXX
+```
 
-## Features
-* **Managed XSS payload fires**: Manage all of your XSS payloads in your XSS Hunter account's control panel.
-* **Powerful XSS Probes**: The following information is collected everytime a probe fires on a vulnerable page:
-    * The vulnerable page's URI 
-    * Origin of Execution 
-    * The Victim's IP Address 
-    * The Page Referer 
-    * The Victim's User Agent 
-    * All Non-HTTP-Only Cookies 
-    * The Page's Full HTML DOM 
-    * Full Screenshot of the Affected Page 
-    * Responsible HTTP Request (If an XSS Hunter compatible injection tool is used)
-    * Browser's reported time
-    * If the payload was fired in an iframe 
-* **Fully Dockerized**: Modify the config with your custom settings and launch with a single command!
-* **Automagically TLS/SSL Setup & Renewal**: Just create the proper DNS records and XSS Hunter Express with automatically utilize LetsEncrypt to set up and renew the appropriate TLS/SSL certificates.
-* **`gzip`-Compressed Payload Fire Images**: All images are stored with `gzip` compression to utilize less hard disk space on your instance.
-* **Minimize Attack Surface**: Optionally disable the web UI altogether to minimize the attack surface of your instance.
-* **Full Page Screenshots**: XSS Hunter probes utilize the HTML5 canvas API to generate a full screenshot of the vulnerable page which an XSS payload has fired on. With this feature you can peak into internal administrative panels, support desks, logging systems, and other internal web apps. This allows for more powerful reports that show the full impact of the vulnerability to your client or bug bounty program.
-* **XSS Payload Fire Email Reports**: XSS payload fires also send out detailed email reports which can be easily forwarded to the appropriate security contacts for easy reporting of critical bugs.
-* **Automatic Payload Generation**: XSS Hunter automatically generates XSS payloads for you to use in your web application security testing.
-* **Correlated Injections**: Perhaps the most powerful feature of XSS Hunter is the ability to correlated injection attempts with XSS payload fires. By using an [XSS Hunter compatible testing tool](https://github.com/mandatoryprogrammer/xsshunter_client) you can know immediately what caused a specific payload to fire (even weeks after the injection attempt was made!).
-* **Page Grabbing**: Upon your XSS payload firing you can specify a list of relative paths for the payload to automatically retrieve and store. This is useful in finding other vulnerabilities such as bad `crossdomain.xml` policies on internal systems which normally couldn't be accessed.
-* **Secondary Payload Loading**: Got a secondary payload that you want to load after XSS Hunter has done it's thing? XSS Hunter offers you the option to specify a secondary JavaScript payload to run after it's completed it's collection.
-* **Mobile Compatible**: Check your payloads at the bar without your laptop, the web interface is fully mobile ready.
+Access admin panel at:
+```
+https://your.domain.com:8443/admin/
+```
 
-## Screenshots
+## 🔒 Security Configuration
 
-![](images/payload-fires.png)
-![](images/collected-pages.png)
-![](images/settings.png)
-![](images/xss-payloads.png)
+### Port Configuration
+- **Ports 80/443**: Public-facing for payload collection
+- **Port 8443**: Admin panel - **MUST BE FIREWALLED**
 
-## Credits
+### Firewall Rules (Required)
+```bash
+# Allow only your IP to access admin panel
+iptables -A INPUT -p tcp --dport 8443 -s YOUR_IP -j ACCEPT
+iptables -A INPUT -p tcp --dport 8443 -j DROP
 
-* The front-end is built in Vue and utilizes the [`vue-black-dashboard`](https://github.com/creativetimofficial/vue-black-dashboard) framework. Licensed under MIT (see [https://github.com/creativetimofficial/vue-black-dashboard#licensing](https://github.com/creativetimofficial/vue-black-dashboard#licensing)).
+# Or using ufw
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow from YOUR_IP to any port 8443
+```
 
-## Security Vulnerabilities
+## 🎯 Extension System
 
-Find a security vulnerability in this service? Nice job! Please email me at `mandatory(at)gmail.com` and I'll try to fix it as soon as possible.
+Extensions allow you to create custom JavaScript that collects additional data beyond the default XSS Hunter collection (cookies, localStorage, DOM, screenshot).
+
+### API Functions
+
+#### `window.addCustomData(dataObject)`
+Adds custom data to the initial XSS payload fire report.
+
+```javascript
+{
+  title: String,  // REQUIRED: Display name for this data
+  data: Object    // REQUIRED: Any JSON-serializable data
+}
+```
+
+#### `window.sendBackgroundData(dataObject)`
+Sends additional data after the initial payload has fired (requires `window.xssPayloadId`).
+
+```javascript
+{
+  title: String,  // REQUIRED: Display name for this data
+  data: Object    // REQUIRED: Any JSON-serializable data
+}
+```
+
+### Using Extensions
+
+1. **Create Extension**: Write JavaScript code using the API functions
+2. **Add to Payload Console**: Navigate to Extensions/Payload Console in admin panel
+3. **Enable/Disable**: Toggle extensions on/off as needed
+4. **Automatic Loading**: Enabled extensions are included in your probe automatically
+5. **View Results**: Check "Custom Scripts Data" in the XSS report
+
+### Example Extensions
+
+#### Basic Data Collection
+```javascript
+// Collect user information with initial payload
+window.addCustomData({
+  title: "User Information",
+  data: {
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    language: navigator.language,
+    screenSize: screen.width + 'x' + screen.height,
+    timestamp: new Date().toISOString()
+  }
+});
+```
+
+#### Background Monitoring
+```javascript
+// Send updates after payload fires
+setTimeout(function waitForPayload() {
+  if (!window.xssPayloadId) {
+    setTimeout(waitForPayload, 1000);
+    return;
+  }
+
+  // Send heartbeat every 5 seconds
+  setInterval(function() {
+    window.sendBackgroundData({
+      title: "Heartbeat",
+      data: {
+        status: "Page active",
+        url: location.href,
+        time: new Date().toISOString()
+      }
+    });
+  }, 5000);
+}, 2000);
+```
+
+### Pre-built Extensions
+
+Located in `/server-ng/custom-extensions-js/`:
+
+- **simple_custom_data.js**: Basic custom data example
+- **simple_background_data.js**: Background monitoring example
+- **data_harvester.js**: Advanced data extraction
+- **continuous_monitor.js**: Real-time activity monitoring
+- **system_analyzer.js**: System information gathering
+
+### Requirements & Best Practices
+
+**Requirements:**
+- Both `title` and `data` fields are mandatory
+- `title` must be a non-empty string
+- `data` must be JSON-serializable
+
+**Best Practices:**
+- Keep extensions focused on specific goals
+- Use try-catch blocks for error handling
+- Test locally before deployment
+- Truncate long strings to avoid excessive data
+- Avoid infinite loops or memory leaks
+
+## 🛠 Development
+
+### Local Development Setup
+```bash
+# Quick start with development script
+./run-dual-dev.sh
+```
+
+Access:
+- Paylaod Server: http://localhost:3000
+- Admin: https://localhost:8443
+
+### Running Tests
+```bash
+cd tests
+./run-all-tests.sh
+```
+
+## 📦 Project Structure
+
+```
+xsshunter-express-ng/
+├── Docker/                # Docker configuration
+├── front-end-vue3/        # Vue 3 admin interface
+│   └── src/
+│       ├── views/         # Page components
+│       └── components/    # Including Extension Manager
+├── server-ng/             # Backend server
+│   ├── extensions/        # Extension system
+│   └── templates/         # Payload templates
+└── tests/                 # Test suite
+```
+
+## 🤝 Credits
+
+Built upon [XSS Hunter Express](https://github.com/mandatoryprogrammer/xsshunter-express) by mandatory (Matthew Bryant).
+
+Enhanced NG version by [0xQRx](https://github.com/0xQRx)
+
+## 📜 License
+
+MIT License - See [LICENSE](LICENSE) file
+
+## 🐛 Support
+
+- **Issues**: [GitHub Issues](https://github.com/0xQRx/xsshunter-express-ng/issues)
+- **Original Project**: [XSS Hunter Express](https://github.com/mandatoryprogrammer/xsshunter-express)

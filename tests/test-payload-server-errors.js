@@ -9,7 +9,7 @@ const originalEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = 'production';
 
 const config = require('../server-ng/shared/config.js');
-const { logError, getSafeErrorMessage, createErrorResponse } = require('../server-ng/payload-server/utils/error-handler.js');
+const { logError, getSafeErrorMessage, createErrorResponse } = require('../server-ng/shared/middleware/error-handler.js');
 
 console.log('Payload Server Error Handling Tests');
 console.log('====================================\n');

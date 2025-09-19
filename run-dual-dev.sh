@@ -100,6 +100,10 @@ export DATABASE_USER=xsshunterexpress
 export DATABASE_PASSWORD=xsshunterexpress
 export DATABASE_HOST=localhost  # Docker exposes port 5432 to localhost
 
+# Optional: Disable database logging (enabled by default in development)
+# Uncomment the line below to disable verbose database query logs
+# export DATABASE_LOGGING=false
+
 # Application settings
 export SCREENSHOTS_DIR=/tmp/xsshunter-screenshots
 export MAX_PAYLOAD_UPLOAD_SIZE_MB=150
