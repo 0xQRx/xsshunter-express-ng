@@ -96,7 +96,7 @@
     <!-- Report Details Modal -->
     <Modal
       v-model="showReportModal"
-      :show-close="true"
+      :show-close="false"
       modal-classes="modal-xl modal-black"
       :centered="true"
       @close="closeReportModal"

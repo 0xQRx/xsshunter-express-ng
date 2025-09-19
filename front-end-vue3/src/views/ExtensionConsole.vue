@@ -97,9 +97,9 @@
     </div>
 
     <!-- Edit/Create Extension Modal -->
-    <Modal 
+    <Modal
       v-model="showModal"
-      :show-close="true"
+      :show-close="false"
       :centered="true"
       :click-out="false"
       header-classes="justify-content-center"

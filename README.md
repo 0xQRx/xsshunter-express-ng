@@ -204,7 +204,7 @@ Located in `/server-ng/custom-extensions-js/`:
 ```
 
 Access:
-- Paylaod Server: http://localhost:3000
+- Payload Server: http://localhost:3000
 - Admin: https://localhost:8443
 
 ### Running Tests
