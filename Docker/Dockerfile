@@ -12,6 +12,7 @@ COPY front-end-vue3 /app/front-end-vue3
 COPY server-ng /app/server-ng
 COPY Docker/docker-entrypoint.sh /app/docker-entrypoint.sh
 COPY Docker/patch-greenlock.js /app/Docker/patch-greenlock.js
+COPY Docker/patch-greenlock-errors.js /app/Docker/patch-greenlock-errors.js
 
 # Build frontend
 WORKDIR /app/front-end-vue3

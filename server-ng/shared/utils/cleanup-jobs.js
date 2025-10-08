@@ -11,19 +11,25 @@ const Sequelize = database.sequelize.Sequelize;
 const CLEANUP_CONFIG = {
     // How often to run cleanup (in milliseconds)
     INTERVAL: 30 * 60 * 1000,  // 30 minutes
-    
+
     // How long to keep unused probe tokens
     UNUSED_TOKEN_TTL: 24 * 60 * 60 * 1000,  // 24 hours
-    
+
     // How long before a session is considered inactive
     INACTIVITY_TIMEOUT: 30 * 60 * 1000,  // 30 minutes
-    
+
     // How long to keep used probe tokens (for audit trail)
     USED_TOKEN_TTL: 7 * 24 * 60 * 60 * 1000,  // 7 days
-    
+
     // Enable console logging
-    VERBOSE: true
+    VERBOSE: true,
+
+    // Log only every Nth run (e.g., 10 = log every 10th run = once every 5 hours if interval is 30min)
+    LOG_EVERY_N_RUNS: 10
 };
+
+// Counter for tracking cleanup runs
+let cleanupRunCounter = 0;
 
 /**
  * Clean up old probe tokens
@@ -74,11 +80,14 @@ async function cleanupProbeTokens() {
 
         const duration = Date.now() - startTime;
         const totalDeleted = unusedDeleted + inactiveDeleted + oldDeleted;
-        
-        if (CLEANUP_CONFIG.VERBOSE && totalDeleted > 0) {
+
+        // Only log based on counter
+        const shouldLog = (cleanupRunCounter % CLEANUP_CONFIG.LOG_EVERY_N_RUNS === 0);
+
+        if (CLEANUP_CONFIG.VERBOSE && shouldLog) {
             console.log(`[Cleanup] ProbeTokens: Deleted ${unusedDeleted} unused, ${inactiveDeleted} inactive, and ${oldDeleted} old tokens in ${duration}ms`);
         }
-        
+
         return { unusedDeleted, inactiveDeleted, oldDeleted, duration };
         
     } catch (error) {
@@ -100,20 +109,23 @@ async function cleanupProbeTokens() {
  * Executes all cleanup jobs
  */
 async function runAllCleanupJobs() {
-    if (CLEANUP_CONFIG.VERBOSE) {
-        console.log('[Cleanup] Starting scheduled cleanup jobs...');
+    cleanupRunCounter++;
+    const shouldLog = CLEANUP_CONFIG.VERBOSE && (cleanupRunCounter % CLEANUP_CONFIG.LOG_EVERY_N_RUNS === 0);
+
+    if (shouldLog) {
+        console.log(`[Cleanup] Starting scheduled cleanup jobs (run #${cleanupRunCounter})...`);
     }
-    
+
     // Run all cleanup jobs
     const results = {
         probeTokens: await cleanupProbeTokens(),
         // Add more cleanup jobs here as needed
     };
-    
-    if (CLEANUP_CONFIG.VERBOSE) {
+
+    if (shouldLog) {
         console.log('[Cleanup] All cleanup jobs completed');
     }
-    
+
     return results;
 }
 

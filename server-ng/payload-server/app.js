@@ -142,7 +142,10 @@ const CollectedPagesCallbackSchema = {
  */
 async function get_app_server() {
     const app = express();
-    
+
+    // Disable X-Powered-By header
+    app.disable('x-powered-by');
+
     // Configure multer with file size limits
     const upload = multer({ 
         dest: '/tmp/',

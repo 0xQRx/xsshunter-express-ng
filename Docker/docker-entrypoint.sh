@@ -43,13 +43,21 @@ mkdir -p /app/greenlock.d/live
 
 echo "[SSL] Greenlock directory ready for domain: ${HOSTNAME}"
 
-# Apply Greenlock patch to prevent it from binding to port 80
+# Apply Greenlock patches
 echo "[Patch] Applying Greenlock HTTPS-only patch..."
 if [ -f /app/Docker/patch-greenlock.js ]; then
     cd /app
     node /app/Docker/patch-greenlock.js
 else
     echo "[Patch] Warning: Patch script not found, Greenlock will try to bind to port 80"
+fi
+
+echo "[Patch] Applying Greenlock error suppression patch..."
+if [ -f /app/Docker/patch-greenlock-errors.js ]; then
+    cd /app
+    node /app/Docker/patch-greenlock-errors.js
+else
+    echo "[Patch] Warning: Error suppression patch script not found"
 fi
 
 echo "[INFO] Starting servers..."
