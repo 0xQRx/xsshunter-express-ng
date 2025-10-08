@@ -45,6 +45,7 @@ function guardAgainstBots(req, res, next) {
 
     // Check for headless browser indicators in User-Agent
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+    const referer = req.headers['referer'];
     const headlessIndicators = [
         'headlesschrome',
         'phantomjs',
