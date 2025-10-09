@@ -34,13 +34,13 @@ const patched = `function explainError(gl, err, ctx, hostname) {
         err.context = ctx;
     }
     // PATCHED: Suppress common network disconnection errors (ECONNRESET, EPIPE, etc.)
-    // These are normal when clients disconnect and don't need to be logged
+    // These are normal when clients disconnect and don't need to be logged or notified
     var suppressedErrors = ['ECONNRESET', 'EPIPE', 'ECANCELED'];
     if (suppressedErrors.indexOf(err.code) === -1) {
-        // Only log errors that aren't normal disconnections
+        // Only log and notify for errors that aren't normal disconnections
         console.error("[warning] network connection error:", (err.context || "") + " " + err.message);
+        (gl.notify || gl._notify)("error", err);
     }
-    (gl.notify || gl._notify)("error", err);
     return err;
 }`;
 
