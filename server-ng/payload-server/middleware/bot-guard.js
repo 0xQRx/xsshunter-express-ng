@@ -75,12 +75,11 @@ function guardAgainstBots(req, res, next) {
     ];
 
     // Only block obvious bots - be conservative to avoid false positives
-    const looksLikeBot = botIndicators.some(indicator => userAgent.includes(indicator)) &&
-                         !userAgent.includes('googlebot'); // Allow legitimate search bots if needed
+    const looksLikeBot = botIndicators.some(indicator => userAgent.includes(indicator));
 
     if (looksLikeBot && !referer) {
         // Bot with no referer is suspicious
-        console.log(`[Bot Guard] Blocked probable bot from ${req.ip}: ${userAgent.substring(0, 50)}`);
+        console.log(`[Bot Guard] Blocked probable bot from ${req.ip}: ${userAgent}`);
         return res.status(404).send('Not Found');
     }
 
