@@ -70,9 +70,9 @@ router.delete('/', validate({ body: DeletePayloadFiresSchema }), async (req, res
     const screenshots_to_delete = screenshot_id_records.map(payload => {
         return `${SCREENSHOTS_DIR}/${payload.screenshot_id}.png.gz`;
     });
-    await Promise.all(screenshots_to_delete.map(screenshot_path => {
-        return asyncfs.unlink(screenshot_path);
-    }));
+
+    // Remove the records first so a missing or undeletable
+    // screenshot can never leave a record stuck in the UI.
     const payload_fires = await PayloadFireResults.destroy({
         where: {
             id: {
@@ -80,6 +80,18 @@ router.delete('/', validate({ body: DeletePayloadFiresSchema }), async (req, res
             }
         }
     });
+
+    // Screenshots may not exist (no screenshot uploaded, or
+    // already removed from disk), so ignore ENOENT.
+    await Promise.all(screenshots_to_delete.map(async screenshot_path => {
+        try {
+            await asyncfs.unlink(screenshot_path);
+        } catch (error) {
+            if (error.code !== 'ENOENT') {
+                console.error(`[Delete] Failed to remove screenshot ${screenshot_path}:`, error.message);
+            }
+        }
+    }));
 
     res.status(200).json({
         'success': true,
