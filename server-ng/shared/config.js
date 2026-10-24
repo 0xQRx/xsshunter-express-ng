@@ -60,7 +60,9 @@ const config = {
     limits: {
         // Maximum XSS callback payload size (includes screenshot, DOM, text, metadata)
         // If payload exceeds this limit, you won't be notified of the XSS firing
-        maxPayloadSizeMB: parseInt(process.env.MAX_PAYLOAD_UPLOAD_SIZE_MB || 150)
+        maxPayloadSizeMB: parseInt(process.env.MAX_PAYLOAD_UPLOAD_SIZE_MB || 150),
+        // Maximum JSON body size (background_callback data from custom extensions)
+        maxJsonBodySizeMB: parseInt(process.env.MAX_JSON_BODY_SIZE_MB || 10)
     },
     
     // Database configuration

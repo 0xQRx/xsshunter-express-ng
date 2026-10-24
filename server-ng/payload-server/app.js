@@ -18,7 +18,7 @@ const { handlePageCallback } = require('./handlers/page.js');
 const database = require('../shared/database.js');
 const config = require('../shared/config.js');
 const { errorHandler, notFoundHandler } = require('../shared/middleware/error-handler.js');
-const { setSecurityHeaders, enforceLowercaseUrls } = require('./middleware/security.js');
+const { setSecurityHeaders, enforceLowercaseUrls, limitRequestSize } = require('./middleware/security.js');
 const { guardAgainstBots } = require('./middleware/bot-guard.js');
 
 /**
@@ -146,11 +146,17 @@ async function get_app_server() {
     // Disable X-Powered-By header
     app.disable('x-powered-by');
 
-    // Configure multer with file size limits
-    const upload = multer({ 
+    const maxPayloadBytes = config.limits.maxPayloadSizeMB * 1024 * 1024; // Convert MB to bytes
+
+    // Configure multer limits. fieldSize must be raised explicitly (multer
+    // defaults to 1MB) or large DOM/page HTML fields are rejected.
+    const upload = multer({
         dest: '/tmp/',
         limits: {
-            fileSize: config.limits.maxPayloadSizeMB * 1024 * 1024 // Convert MB to bytes
+            fileSize: maxPayloadBytes,
+            fieldSize: maxPayloadBytes,
+            fields: 30,
+            files: 1
         }
     });
     
@@ -190,10 +196,13 @@ async function get_app_server() {
         next(error);
     });
 
-    // Enable body parsing with same payload size limits
-    const bodyLimit = `${config.limits.maxPayloadSizeMB}mb`;
-    app.use(bodyParser.json({ limit: bodyLimit }));
-    app.use(bodyParser.urlencoded({ limit: bodyLimit, extended: true }));
+    // Cap total request size before any body parsing
+    app.use(limitRequestSize(maxPayloadBytes));
+
+    // JSON is only used by background_callback; the probe never sends
+    // urlencoded bodies (js_callback/page_callback are multipart via multer)
+    app.use(bodyParser.json({ limit: `${config.limits.maxJsonBodySizeMB}mb` }));
+    app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 
     // Enforce lowercase URLs to prevent bypass techniques
     app.use(enforceLowercaseUrls);

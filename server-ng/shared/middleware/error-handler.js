@@ -91,6 +91,16 @@ function errorHandler(err, req, res, next) {
             code: 'FILE_TOO_LARGE'
         });
     }
+
+    // Other multer limit errors (field size/count, unexpected files)
+    if (err.name === 'MulterError') {
+        const status = err.code === 'LIMIT_UNEXPECTED_FILE' ? 400 : 413;
+        return res.status(status).json({
+            success: false,
+            error: status === 413 ? 'Payload too large' : 'Unexpected file field',
+            code: err.code
+        });
+    }
     
     // Default error response
     const statusCode = err.status || err.statusCode || 500;
