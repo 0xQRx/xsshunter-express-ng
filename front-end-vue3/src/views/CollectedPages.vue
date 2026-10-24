@@ -96,6 +96,9 @@ import BaseButton from '@/components/BaseButton.vue'
 import BasePagination from '@/components/BasePagination.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import api_request from '@/services/api'
+import { useToast } from '@/composables/useToast'
+
+const { showError } = useToast()
 
 // Data
 const loading = ref(false)
@@ -116,8 +119,32 @@ const formatWithCommas = (inputNumber: number) => {
 }
 
 const deleteCollectedPage = async (collectedPageId: string) => {
-  await api_request.delete_collect_pages([collectedPageId])
-  await pullCollectedPages()
+  // Remove the page immediately, restore it if the delete fails
+  const previousPages = collectedPages.value
+  const previousCount = pagesCount.value
+  collectedPages.value = previousPages.filter(collectedPage => collectedPage.id !== collectedPageId)
+  pagesCount.value = Math.max(0, previousCount - 1)
+
+  try {
+    const response = await api_request.delete_collect_pages([collectedPageId])
+    if (!response?.success) {
+      throw new Error(response?.error || 'Delete failed')
+    }
+  } catch (error) {
+    console.error('Error deleting collected page:', error)
+    collectedPages.value = previousPages
+    pagesCount.value = previousCount
+    showError('Failed to delete collected page.')
+    return
+  }
+
+  // Step back a page if this one is now empty (the page watcher re-pulls),
+  // otherwise re-pull to backfill the page from the next one
+  if (collectedPages.value.length === 0 && page.value > 1) {
+    page.value--
+  } else {
+    await pullCollectedPages()
+  }
 }
 
 const pullCollectedPages = async () => {

@@ -451,8 +451,11 @@ import CodeEditor from '@/components/CodeEditor.vue'
 import Modal from '@/components/Modal.vue'
 import * as api from '@/services/api'
 import { setLoadingHandler } from '@/services/api'
+import { useToast } from '@/composables/useToast'
 
 dayjs.extend(relativeTime)
+
+const { showError } = useToast()
 
 // Data
 const loading = ref(false)
@@ -517,8 +520,32 @@ const formatDate = (date: string | number) => {
 }
 
 const deletePayloadFire = async (payloadId: string) => {
-  await api.delete_payload_fires([payloadId])
-  await pullPayloadFireReports()
+  // Remove the card immediately, restore it if the delete fails
+  const previousReports = payloadFireReports.value
+  const previousCount = reportCount.value
+  payloadFireReports.value = previousReports.filter(report => report.id !== payloadId)
+  reportCount.value = Math.max(0, previousCount - 1)
+
+  try {
+    const response = await api.delete_payload_fires([payloadId])
+    if (!response?.success) {
+      throw new Error(response?.error || 'Delete failed')
+    }
+  } catch (error) {
+    console.error('Error deleting payload fire:', error)
+    payloadFireReports.value = previousReports
+    reportCount.value = previousCount
+    showError('Failed to delete payload fire report.')
+    return
+  }
+
+  // Step back a page if this one is now empty (the page watcher re-pulls),
+  // otherwise re-pull to backfill the page from the next one
+  if (payloadFireReports.value.length === 0 && page.value > 1) {
+    page.value--
+  } else {
+    await pullPayloadFireReports()
+  }
 }
 
 const pullPayloadFireReports = async () => {
