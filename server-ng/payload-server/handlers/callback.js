@@ -186,7 +186,7 @@ async function handleJSCallback(req, res) {
         }
 
         // Check if Discord notifications are enabled
-        const discordConfigured = process.env.DISCORD_WEBHOOK_URL && process.env.DISCORD_WEBHOOK_URL.trim() !== '';
+        const discordConfigured = notification.parse_discord_webhook_url(process.env.DISCORD_WEBHOOK_URL) !== null;
         const discordAlertSetting = await database.Settings.findOne({
             where: { key: constants.SEND_DISCORD_ALERTS_KEY }
         });

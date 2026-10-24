@@ -13,6 +13,7 @@ const constants = require('../../shared/constants.js');
 const { UpdateConfigSchema } = require('../middleware/validation');
 const { get_hashed_password, get_secure_random_string } = require('../../shared/utils/crypto-utils.js');
 const { reinitializeSessionMiddleware } = require('../middleware/session.js');
+const { parse_discord_webhook_url } = require('../../shared/utils/notification.js');
 
 /**
  * GET /api/v1/settings
@@ -62,7 +63,7 @@ router.get('/', async (req, res) => {
     
     // Add notification configuration status
     result.email_configured = process.env.SMTP_EMAIL_NOTIFICATIONS_ENABLED === "true";
-    result.discord_configured = !!process.env.DISCORD_WEBHOOK_URL;
+    result.discord_configured = parse_discord_webhook_url(process.env.DISCORD_WEBHOOK_URL) !== null;
     
     let database_promises = settings_to_retrieve.map(async settings_value_metadata => {
         const db_record = await Settings.findOne({

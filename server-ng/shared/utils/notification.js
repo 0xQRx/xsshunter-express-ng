@@ -3,7 +3,6 @@ const mustache = require('mustache');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const url = require('url');
 
 const XSS_PAYLOAD_FIRE_EMAIL_TEMPLATE = fs.readFileSync(
 	path.join(__dirname, '../../templates/xss_email_template.htm'),
@@ -37,6 +36,54 @@ async function send_email_notification(xss_payload_fire_data) {
 	console.log("Message sent: %s", info.messageId);
 }
 
+const DISCORD_WEBHOOK_HOSTS = ['discord.com', 'discordapp.com', 'ptb.discord.com', 'canary.discord.com'];
+const DISCORD_WEBHOOK_PATH_REGEX = /^\/api\/(v\d+\/)?webhooks\/\d+\/[A-Za-z0-9_-]+\/?$/;
+
+/*
+	Parse and strictly validate a Discord webhook URL.
+	Compares the parsed hostname exactly (never a string prefix, which
+	"https://discord.com.evil.tld" or "https://discord.com@evil.tld" would pass).
+	Returns the parsed URL, or null if it isn't a Discord webhook URL.
+*/
+function parse_discord_webhook_url(webhookUrl) {
+	if (!webhookUrl || typeof webhookUrl !== 'string') {
+		return null;
+	}
+
+	let parsedUrl;
+	try {
+		parsedUrl = new URL(webhookUrl.trim());
+	} catch {
+		return null;
+	}
+
+	if (parsedUrl.protocol !== 'https:') return null;
+	if (!DISCORD_WEBHOOK_HOSTS.includes(parsedUrl.hostname)) return null;
+	if (parsedUrl.port !== '') return null;
+	if (parsedUrl.username !== '' || parsedUrl.password !== '') return null;
+	if (!DISCORD_WEBHOOK_PATH_REGEX.test(parsedUrl.pathname)) return null;
+
+	return parsedUrl;
+}
+
+// Discord rejects the whole webhook if any embed field value exceeds 1024 chars
+function truncate_embed_value(value, fallback, max_length = 1024) {
+	let text = (value === undefined || value === null || value === '') ? fallback : String(value);
+	if (text.length > max_length) {
+		text = text.substring(0, max_length - 3) + '...';
+	}
+	return text;
+}
+
+// Render attacker-controlled values as inline code so Discord markdown
+// (masked links, mentions, formatting) in them isn't interpreted
+function as_inline_code(value, fallback) {
+	if (value === undefined || value === null || value === '') {
+		return fallback;
+	}
+	return '`' + truncate_embed_value(String(value).replace(/`/g, "'"), fallback, 1022) + '`';
+}
+
 async function send_discord_notification(xss_payload_fire_data) {
 	return new Promise((resolve, reject) => {
 		const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -45,14 +92,14 @@ async function send_discord_notification(xss_payload_fire_data) {
 			return;
 		}
 
-		const parsedUrl = url.parse(webhookUrl);
-		
-		// Truncate cookies if too long
-		let cookiesValue = xss_payload_fire_data.cookies || 'None';
-		if (cookiesValue.length > 1024) {
-			cookiesValue = cookiesValue.substring(0, 1021) + '...';
+		const parsedUrl = parse_discord_webhook_url(webhookUrl);
+		if (!parsedUrl) {
+			reject(new Error('DISCORD_WEBHOOK_URL is not a valid Discord webhook URL (expected https://discord.com/api/webhooks/<id>/<token>)'));
+			return;
 		}
-		
+
+		const cookiesValue = as_inline_code(xss_payload_fire_data.cookies, 'None');
+
 		// Construct proper admin panel URL
 		console.log('[Discord Debug] Environment variables:');
 		console.log('  - process.env.HOSTNAME:', process.env.HOSTNAME);
@@ -93,17 +140,17 @@ async function send_discord_notification(xss_payload_fire_data) {
 				fields: [
 					{
 						name: '🌐 URL',
-						value: xss_payload_fire_data.url || 'N/A',
+						value: as_inline_code(xss_payload_fire_data.url, 'N/A'),
 						inline: false
 					},
 					{
 						name: '📍 IP Address',
-						value: xss_payload_fire_data.ip_address || 'N/A',
+						value: truncate_embed_value(xss_payload_fire_data.ip_address, 'N/A'),
 						inline: true
 					},
 					{
 						name: '🔗 Referer',
-						value: xss_payload_fire_data.referer || 'None',
+						value: as_inline_code(xss_payload_fire_data.referer, 'None'),
 						inline: true
 					},
 					{
@@ -113,7 +160,7 @@ async function send_discord_notification(xss_payload_fire_data) {
 					},
 					{
 						name: '🔑 Injection Key',
-						value: `\`${xss_payload_fire_data.injection_key || 'N/A'}\``,
+						value: as_inline_code(xss_payload_fire_data.injection_key, 'N/A'),
 						inline: true
 					}
 				],
@@ -135,8 +182,9 @@ async function send_discord_notification(xss_payload_fire_data) {
 
 		const options = {
 			hostname: parsedUrl.hostname,
-			path: parsedUrl.path,
+			path: parsedUrl.pathname + parsedUrl.search,
 			method: 'POST',
+			timeout: 10000,
 			headers: {
 				'Content-Type': 'application/json',
 				'Content-Length': Buffer.byteLength(data)
@@ -159,6 +207,10 @@ async function send_discord_notification(xss_payload_fire_data) {
 			});
 		});
 
+		req.on('timeout', () => {
+			req.destroy(new Error('Discord webhook request timed out'));
+		});
+
 		req.on('error', (error) => {
 			console.error('Discord notification error:', error);
 			reject(error);
@@ -171,3 +223,4 @@ async function send_discord_notification(xss_payload_fire_data) {
 
 module.exports.send_email_notification = send_email_notification;
 module.exports.send_discord_notification = send_discord_notification;
+module.exports.parse_discord_webhook_url = parse_discord_webhook_url;
