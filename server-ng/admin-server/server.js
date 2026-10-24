@@ -68,7 +68,8 @@ async function startWithSSL(port) {
         
         const selfsigned = require('selfsigned');
         const attrs = [{ name: 'commonName', value: hostname || 'localhost' }];
-        const pems = selfsigned.generate(attrs, { days: 365 });
+        // Valid for 365 days by default; selfsigned defaults to SHA-1 signatures
+        const pems = await selfsigned.generate(attrs, { algorithm: 'sha256' });
         
         httpsOptions = {
             cert: pems.cert,
